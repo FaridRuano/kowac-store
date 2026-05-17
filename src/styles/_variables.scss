@@ -1,0 +1,26 @@
+$color-background: #f6f1ea;
+$color-surface: #fffdf9;
+$color-text: #171412;
+$color-muted: #6e655d;
+$color-sand: #d8c1a0;
+$color-leather: #8b5e3c;
+$color-leather-dark: #5d3a21;
+$color-soft-gray: #ded8d2;
+$color-border: rgba(23, 20, 18, 0.12);
+
+:root {
+  --color-background: #{$color-background};
+  --color-surface: #{$color-surface};
+  --color-text: #{$color-text};
+  --color-muted: #{$color-muted};
+  --color-sand: #{$color-sand};
+  --color-leather: #{$color-leather};
+  --color-leather-dark: #{$color-leather-dark};
+  --color-soft-gray: #{$color-soft-gray};
+  --color-border: #{$color-border};
+  --shadow-soft: 0 18px 45px rgba(23, 20, 18, 0.08);
+  --container-width: 1200px;
+  --radius-sm: 0.75rem;
+  --radius-md: 1.25rem;
+  --radius-lg: 2rem;
+}

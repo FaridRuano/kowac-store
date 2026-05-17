@@ -1,0 +1,15 @@
+.text-muted {
+  color: var(--color-muted);
+}
+
+.stack-sm > * + * {
+  margin-top: 0.75rem;
+}
+
+.stack-md > * + * {
+  margin-top: 1.25rem;
+}
+
+.stack-lg > * + * {
+  margin-top: 2rem;
+}
