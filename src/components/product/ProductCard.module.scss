@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: rgba(255, 253, 249, 0.88);
+  background: rgba(255, 252, 247, 0.9);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-soft);
@@ -13,7 +13,7 @@
 
 .card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 24px 50px rgba(23, 20, 18, 0.12);
+  box-shadow: 0 24px 50px rgba(26, 24, 22, 0.1);
 }
 
 .media {
@@ -22,7 +22,7 @@
   overflow: hidden;
   background:
     radial-gradient(circle at top, rgba(255, 255, 255, 0.45), transparent 30%),
-    linear-gradient(145deg, rgba(216, 193, 160, 0.55), rgba(139, 94, 60, 0.18));
+    linear-gradient(145deg, rgba(216, 199, 174, 0.65), rgba(43, 39, 35, 0.16));
 }
 
 .media img {
@@ -37,7 +37,7 @@
   display: grid;
   place-items: center;
   color: rgba(23, 20, 18, 0.5);
-  font-family: var(--font-display), serif;
+  font-family: var(--font-display), sans-serif;
   letter-spacing: 0.18em;
 }
 
@@ -48,7 +48,7 @@
   z-index: 1;
   padding: 0.4rem 0.8rem;
   border-radius: 999px;
-  background: rgba(23, 20, 18, 0.88);
+  background: rgba(26, 24, 22, 0.9);
   color: white;
   font-size: 0.72rem;
   letter-spacing: 0.08em;

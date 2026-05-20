@@ -1,60 +1,247 @@
 .header {
   position: sticky;
   top: 0;
-  z-index: 20;
-  backdrop-filter: blur(16px);
-  background: rgba(246, 241, 234, 0.78);
+  z-index: 40;
+  backdrop-filter: none;
+  background: rgba(255, 252, 247, 0.94);
   border-bottom: 1px solid var(--color-border);
 }
 
 .inner {
+  position: relative;
+  z-index: 25;
   width: min(calc(100% - 2rem), var(--container-width));
   margin: 0 auto;
   min-height: 5rem;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   gap: 1rem;
 }
 
+.menuArea {
+  position: relative;
+  align-self: stretch;
+  z-index: 31;
+}
+
 .brand {
-  font-family: var(--font-display), serif;
-  font-size: 1.45rem;
-  letter-spacing: 0.22em;
+  display: inline-flex;
+  align-items: center;
+  justify-self: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 32;
+}
+
+.brandLogo {
+  width: auto;
+  height: 1.55rem;
 }
 
 .nav {
   display: flex;
-  align-items: center;
+  align-items: stretch;
+  align-self: stretch;
+  height: 100%;
   gap: 1.2rem;
   flex-wrap: wrap;
+  justify-self: start;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  height: 100%;
 }
 
 .navLink {
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
+  padding-inline: 0.15rem;
   color: var(--color-muted);
   transition: color 180ms ease;
 }
 
-.navLink:hover {
+.navLink:hover,
+.navLinkActive {
   color: var(--color-text);
 }
 
-.cartLink {
+.submenuShell {
+  position: fixed;
+  inset: 5rem 0 0 0;
+  z-index: 30;
+  width: fit-content;
+}
+
+.submenuSidebar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 320px;
+  padding: 2rem 2rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  background: rgba(255, 252, 247, 0.98);
+  border-right: 1px solid rgba(26, 24, 22, 0.08);
+  box-shadow: 18px 0 40px rgba(26, 24, 22, 0.08);
+  z-index: 1;
+}
+
+.submenuMediaColumn {
+  position: absolute;
+  left: 320px;
+  top: 0;
+  height: 100%;
+  width: 320px;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 1px;
+  background: rgba(26, 24, 22, 0.08);
+  z-index: 1;
+}
+
+.submenuVisual {
+  position: relative;
+  min-height: 220px;
+  padding: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+  gap: 0.45rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent),
+    linear-gradient(155deg, rgba(216, 199, 174, 0.88), rgba(43, 39, 35, 0.88));
+  color: white;
+  overflow: hidden;
+}
+
+.submenuVisualLabel {
+  position: absolute;
+  left: 0.85rem;
+  top: 0.85rem;
+  display: inline-flex;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.submenuLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.submenuLink {
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(26, 24, 22, 0.08);
+  color: var(--color-text);
+  background: transparent;
+  transition:
+    color 180ms ease,
+    padding-left 180ms ease;
+}
+
+.submenuLink:hover {
+  color: var(--color-leather-dark);
+  padding-left: 0.35rem;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: 0.65rem;
+  position: relative;
+  z-index: 32;
+}
+
+.iconButton,
+.iconLink {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 3rem;
-  min-height: 3rem;
-  padding-inline: 1rem;
+  width: 2.85rem;
+  height: 2.85rem;
   border-radius: 999px;
-  background: var(--color-text);
-  color: white;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--color-text);
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+.iconButton {
+  cursor: pointer;
+}
+
+.iconButton:hover,
+.iconLink:hover {
+  transform: translateY(-1px);
+  border-color: rgba(26, 24, 22, 0.2);
+  background: rgba(216, 199, 174, 0.22);
+}
+
+.pageBackdrop {
+  position: fixed;
+  inset: 5rem 0 0 0;
+  background: rgba(26, 24, 22, 0.2);
+  backdrop-filter: blur(22px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 20;
+  transition:
+    opacity 180ms ease,
+    visibility 180ms ease;
+}
+
+.pageBackdropActive {
+  opacity: 1;
+  visibility: visible;
 }
 
 @media (max-width: 900px) {
   .inner {
     padding-block: 1rem;
-    align-items: flex-start;
-    flex-direction: column;
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .brandLogo {
+    height: 1.4rem;
+  }
+
+  .nav {
+    align-items: center;
+    align-self: auto;
+    height: auto;
+    justify-self: center;
+  }
+
+  .navItem {
+    height: auto;
+  }
+
+  .submenuShell {
+    display: none;
+  }
+
+  .pageBackdrop {
+    display: none;
+  }
+
+  .actions {
+    justify-self: center;
+    flex-wrap: wrap;
   }
 }

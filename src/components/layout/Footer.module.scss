@@ -1,20 +1,386 @@
 .footer {
   border-top: 1px solid var(--color-border);
-  background: rgba(255, 253, 249, 0.72);
+  background: rgba(255, 252, 247, 0.72);
 }
 
 .inner {
   width: min(calc(100% - 2rem), var(--container-width));
   margin: 0 auto;
-  padding-block: 2rem;
+  padding-block: 1.6rem 1.2rem;
   display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+  color: var(--color-text);
+}
+
+.brandBlock {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.brandCopy strong {
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.92rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.mark {
+  width: 1.9rem;
+  height: 1.9rem;
+  object-fit: contain;
+}
+
+.metaBlock {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.linksBlock {
+  display: grid;
+  justify-items: start;
+  gap: 0.45rem;
+}
+
+.sitemapBlock {
+  display: grid;
+  justify-items: start;
+  gap: 0.45rem;
+}
+
+.helpBlock {
+  display: grid;
+  justify-items: start;
+  gap: 0.45rem;
+}
+
+.sitemapLinks {
+  display: grid;
+  justify-items: start;
+  gap: 0.35rem;
+}
+
+.helpLinks {
+  display: grid;
+  justify-items: start;
+  gap: 0.35rem;
+}
+
+.sitemapLink {
+  color: var(--color-text);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  transition: color 180ms ease;
+}
+
+.sitemapLink:hover {
+  color: var(--color-leather-dark);
+}
+
+.helpLink {
+  color: var(--color-text);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  transition: color 180ms ease;
+}
+
+.helpLink:hover {
+  color: var(--color-leather-dark);
+}
+
+.linksLabel {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.sectionToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.toggleIcon {
+  display: none;
+  color: var(--color-muted);
+  transition: transform 180ms ease;
+}
+
+.toggleIconOpen {
+  transform: rotate(180deg);
+}
+
+.sectionContentPanel {
+  width: 100%;
+}
+
+.socialLinks {
+  display: grid;
+  justify-items: start;
+  gap: 0.45rem;
+}
+
+.socialLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--color-text);
+  transition:
+    transform 180ms ease,
+    color 180ms ease;
+}
+
+.socialLink:hover {
+  transform: translateY(-1px);
+  color: var(--color-leather-dark);
+}
+
+.socialLink:focus-visible {
+  outline: 2px solid rgba(23, 20, 18, 0.35);
+  outline-offset: 3px;
+}
+
+.socialLink span {
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.socialIcon {
+  width: 1.9rem;
+  height: 1.9rem;
+  padding: 0.45rem;
+  border: 1px solid rgba(26, 24, 22, 0.12);
+  border-radius: 999px;
+  background: rgba(40, 36, 32, 0.88);
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.contactBlock {
+  display: grid;
+  justify-items: start;
+  gap: 0.45rem;
+}
+
+.contactContent {
+  display: block;
+}
+
+.languageBlock {
+  display: grid;
+  justify-items: start;
+  gap: 0.45rem;
+}
+
+.contactLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text);
+  transition:
+    transform 180ms ease,
+    color 180ms ease;
+}
+
+.contactLink:hover {
+  transform: translateY(-1px);
+  color: var(--color-leather-dark);
+}
+
+.contactLink:focus-visible {
+  outline: 2px solid rgba(23, 20, 18, 0.35);
+  outline-offset: 3px;
+}
+
+.contactLink span {
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.contactIcon {
+  width: 1.9rem;
+  height: 1.9rem;
+  padding: 0.45rem;
+  border: 1px solid rgba(26, 24, 22, 0.12);
+  border-radius: 999px;
+  background: rgba(40, 36, 32, 0.88);
+  object-fit: contain;
+}
+
+.languageOptions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.languageOption {
+  min-width: auto;
+  min-height: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-muted);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition:
+    color 180ms ease;
+}
+
+.languageOptionActive {
+  color: var(--color-text);
+  text-decoration: underline;
+  text-underline-offset: 0.22rem;
+}
+
+.legalBar {
+  width: min(calc(100% - 2rem), var(--container-width));
+  margin: 0 auto;
+  padding: 0 0 1.1rem;
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  flex-wrap: wrap;
+  border-top: 1px solid rgba(26, 24, 22, 0.08);
+  padding-top: 0.95rem;
+}
+
+.policyLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem 1.2rem;
+}
+
+.policyLink {
   color: var(--color-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  transition: color 180ms ease;
+}
+
+.policyLink:hover {
+  color: var(--color-text);
+}
+
+.legalBar p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
 }
 
 @media (max-width: 720px) {
   .inner {
     flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .metaBlock {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .linksBlock {
+    width: 100%;
+    justify-items: flex-start;
+    gap: 0;
+  }
+
+  .sitemapBlock {
+    width: 100%;
+    justify-items: flex-start;
+    gap: 0;
+  }
+
+  .helpBlock {
+    width: 100%;
+    justify-items: flex-start;
+    gap: 0;
+  }
+
+  .sitemapLinks {
+    justify-items: flex-start;
+    padding-top: 0.65rem;
+  }
+
+  .helpLinks {
+    justify-items: flex-start;
+    padding-top: 0.65rem;
+  }
+
+  .socialLinks {
+    justify-items: flex-start;
+    padding-top: 0.65rem;
+  }
+
+  .contactBlock {
+    justify-items: flex-start;
+    width: 100%;
+    gap: 0;
+  }
+
+  .languageBlock {
+    justify-items: flex-start;
+    width: 100%;
+    gap: 0;
+  }
+
+  .contactContent {
+    padding-top: 0.65rem;
+  }
+
+  .legalBar {
+    align-items: flex-start;
+  }
+
+  .languageOptions {
+    padding-top: 0.65rem;
+  }
+
+  .sectionToggle {
+    padding: 0.05rem 0;
+  }
+
+  .toggleIcon {
+    display: inline-flex;
+  }
+
+  .sectionContentPanel {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition:
+      grid-template-rows 260ms ease,
+      opacity 220ms ease;
+  }
+
+  .sectionContentPanel > * {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .sectionContentOpen {
+    grid-template-rows: 1fr;
+    opacity: 1;
   }
 }

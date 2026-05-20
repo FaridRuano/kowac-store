@@ -2,21 +2,24 @@ import Link from "next/link";
 
 import ProductGrid from "@/components/product/ProductGrid";
 
-const featuredCategories = [
+const campaignPanels = [
   {
     slug: "zapatos",
-    title: "Zapatos",
-    description: "Siluetas pensadas para carácter, comodidad y presencia.",
+    title: "Campaña Zapatos",
+    tag: "Espacio imagen 01",
+    size: "large",
   },
   {
     slug: "ropa",
-    title: "Ropa",
-    description: "Capas esenciales con materiales nobles y mirada contemporánea.",
+    title: "Drop Ropa",
+    tag: "Espacio imagen 02",
+    size: "small",
   },
   {
     slug: "accesorios",
     title: "Accesorios",
-    description: "Detalles que completan el gesto de la marca.",
+    tag: "Espacio imagen 03",
+    size: "small",
   },
 ];
 
@@ -51,35 +54,26 @@ export default function HomePage() {
     <>
       <section className="page-hero">
         <div className="container">
-          <div className="hero-layout">
-            <div className="hero-panel card-surface stack-lg">
-              <span className="eyebrow">Kowac Ecuador</span>
-
-              <div className="stack-md">
-                <h1 className="hero-title">Calzado y estilo ecuatoriano para caminar con carácter</h1>
-                <p className="hero-copy">
-                  Una base de e-commerce diseñada para que Kowac crezca con catálogo propio,
-                  variantes complejas y una experiencia de marca más cuidada que una tienda genérica.
-                </p>
-              </div>
-
+          <div className="hero-media-layout">
+            <div className="hero-copy-panel card-surface stack-md">
+              <span className="eyebrow">Nueva colección</span>
+              <h1 className="hero-title">Más imagen. Más producto.</h1>
               <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
                 <Link href="/tienda" className="button-primary">
-                  Explorar colección
+                  Ver productos
                 </Link>
-                <Link href="/admin" className="button-secondary">
-                  Ver panel base
+                <Link href="/tienda?type=zapatos" className="button-secondary">
+                  Ver zapatos
                 </Link>
               </div>
             </div>
 
-            <div className="hero-visual card-surface">
-              <div className="hero-stat">
-                <strong>Fase 1 lista para crecer</strong>
-                <p style={{ margin: "0.5rem 0 0", color: "var(--color-muted)" }}>
-                  Modelos, API inicial y storefront base preparados para catálogo real.
-                </p>
-              </div>
+            <div className="hero-visual hero-visual--primary card-surface">
+              <span className="visual-label">Espacio imagen hero principal</span>
+            </div>
+
+            <div className="hero-visual hero-visual--secondary card-surface">
+              <span className="visual-label">Espacio imagen editorial secundaria</span>
             </div>
           </div>
         </div>
@@ -89,29 +83,49 @@ export default function HomePage() {
         <div className="container">
           <div className="section-heading">
             <div className="stack-sm">
-              <span className="eyebrow">Categorías</span>
+              <span className="eyebrow">Campañas</span>
               <h2 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: "2.4rem" }}>
-                Universo Kowac
+                Visuales para producto
               </h2>
             </div>
           </div>
 
-          <div className="feature-grid">
-            {featuredCategories.map((category) => (
+          <div className="campaign-grid">
+            {campaignPanels.map((panel) => (
               <Link
-                key={category.slug}
-                href={`/tienda?type=${category.slug}`}
-                className="card-surface"
-                style={{ padding: "1.75rem", minHeight: "220px", display: "flex", alignItems: "end" }}
+                key={panel.slug}
+                href={`/tienda?type=${panel.slug}`}
+                className={`campaign-card campaign-card--${panel.size} card-surface`}
               >
-                <div className="stack-sm">
-                  <strong style={{ fontSize: "1.3rem" }}>{category.title}</strong>
-                  <p className="text-muted" style={{ margin: 0 }}>
-                    {category.description}
-                  </p>
+                <span className="visual-label">{panel.tag}</span>
+                <div className="campaign-card__content">
+                  <strong>{panel.title}</strong>
                 </div>
               </Link>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="container">
+          <div className="lookbook-strip">
+            <div className="lookbook-tile card-surface">
+              <span className="visual-label">Espacio imagen lookbook 01</span>
+            </div>
+            <div className="lookbook-tile card-surface">
+              <span className="visual-label">Espacio imagen lookbook 02</span>
+            </div>
+            <div className="lookbook-tile card-surface">
+              <span className="visual-label">Espacio imagen lookbook 03</span>
+            </div>
+            <div className="lookbook-copy card-surface">
+              <span className="eyebrow">Drop</span>
+              <strong>Zapatos, ropa y accesorios en primer plano.</strong>
+              <Link href="/tienda" className="button-primary">
+                Comprar ahora
+              </Link>
+            </div>
           </div>
         </div>
       </section>

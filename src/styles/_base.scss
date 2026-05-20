@@ -12,8 +12,9 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(circle at top left, rgba(216, 193, 160, 0.28), transparent 34%),
-    linear-gradient(180deg, #fbf8f3 0%, var(--color-background) 100%);
+    radial-gradient(circle at top left, rgba(216, 199, 174, 0.32), transparent 34%),
+    radial-gradient(circle at right 20%, rgba(43, 39, 35, 0.05), transparent 28%),
+    linear-gradient(180deg, #fcfaf5 0%, var(--color-background) 100%);
   color: var(--color-text);
   font-family: var(--font-body), sans-serif;
   text-rendering: optimizeLegibility;
@@ -72,7 +73,7 @@ button {
   padding: 0.35rem 0.8rem;
   border: 1px solid var(--color-border);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.65);
+  background: rgba(255, 252, 247, 0.72);
   color: var(--color-muted);
   font-size: 0.78rem;
   letter-spacing: 0.08em;
@@ -101,22 +102,23 @@ button {
 
 .button-primary:hover {
   transform: translateY(-1px);
-  background: #000;
+  background: #0d0c0b;
 }
 
 .button-secondary {
   border: 1px solid var(--color-border);
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 252, 247, 0.82);
   color: var(--color-text);
 }
 
 .button-secondary:hover {
   transform: translateY(-1px);
-  border-color: rgba(23, 20, 18, 0.25);
+  border-color: rgba(26, 24, 22, 0.22);
+  background: rgba(216, 199, 174, 0.2);
 }
 
 .card-surface {
-  background: rgba(255, 253, 249, 0.9);
+  background: rgba(255, 252, 247, 0.92);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-soft);
@@ -129,7 +131,7 @@ button {
 .page-hero h1,
 .hero-title {
   margin: 0;
-  font-family: var(--font-display), serif;
+  font-family: var(--font-display), sans-serif;
   font-size: clamp(2.8rem, 5vw, 5.6rem);
   line-height: 0.95;
   letter-spacing: -0.04em;
@@ -149,17 +151,43 @@ button {
   align-items: stretch;
 }
 
+.hero-media-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr) minmax(260px, 0.6fr);
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
 .hero-panel {
   padding: clamp(2rem, 4vw, 3.5rem);
+}
+
+.hero-copy-panel {
+  min-height: 520px;
+  padding: clamp(1.75rem, 3vw, 2.5rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
 }
 
 .hero-visual {
   min-height: 460px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent),
-    linear-gradient(135deg, #c8aa86 0%, #8b5e3c 45%, #241a14 100%);
+    linear-gradient(135deg, #d9c6aa 0%, #8a7a67 48%, #1a1816 100%);
   position: relative;
   overflow: hidden;
+}
+
+.hero-visual--primary {
+  min-height: 520px;
+}
+
+.hero-visual--secondary {
+  min-height: 520px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent),
+    linear-gradient(145deg, #e3d6c4 0%, #9a8976 42%, #201d1a 100%);
 }
 
 .hero-visual::before,
@@ -190,8 +218,22 @@ button {
   max-width: 220px;
   padding: 1.1rem 1.2rem;
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 252, 247, 0.92);
   color: var(--color-text);
+}
+
+.visual-label {
+  position: absolute;
+  left: 1rem;
+  top: 1rem;
+  display: inline-flex;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(255, 252, 247, 0.84);
+  color: var(--color-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .simple-page {
@@ -208,6 +250,63 @@ button {
   gap: 1.5rem;
 }
 
+.campaign-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr 0.9fr;
+  gap: 1.5rem;
+}
+
+.campaign-card {
+  position: relative;
+  padding: 1.4rem;
+  display: flex;
+  align-items: end;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 40%),
+    linear-gradient(135deg, rgba(216, 199, 174, 0.9), rgba(32, 29, 26, 0.88));
+}
+
+.campaign-card--large,
+.campaign-card--small {
+  min-height: 420px;
+}
+
+.campaign-card__content {
+  position: relative;
+  z-index: 1;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.lookbook-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(260px, 0.8fr);
+  gap: 1.5rem;
+}
+
+.lookbook-tile,
+.lookbook-copy {
+  position: relative;
+  min-height: 340px;
+  overflow: hidden;
+}
+
+.lookbook-tile {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent),
+    linear-gradient(160deg, rgba(228, 216, 197, 0.96), rgba(30, 27, 24, 0.86));
+}
+
+.lookbook-copy {
+  padding: 1.6rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+  gap: 1rem;
+}
+
 .product-detail-grid {
   display: grid;
   grid-template-columns: 1.05fr 0.95fr;
@@ -222,7 +321,13 @@ button {
 }
 
 @media (max-width: 900px) {
-  .hero-layout {
+  .hero-layout,
+  .hero-media-layout,
+  .feature-grid,
+  .campaign-grid,
+  .lookbook-strip,
+  .product-detail-grid,
+  .admin-grid {
     grid-template-columns: 1fr;
   }
 
@@ -230,15 +335,22 @@ button {
     min-height: 320px;
   }
 
-  .feature-grid,
-  .product-detail-grid,
-  .admin-grid {
-    grid-template-columns: 1fr;
+  .hero-copy-panel,
+  .hero-visual--primary,
+  .hero-visual--secondary,
+  .campaign-card--large,
+  .campaign-card--small,
+  .lookbook-tile,
+  .lookbook-copy {
+    min-height: 280px;
   }
 }
 
 @media (max-width: 640px) {
-  .feature-grid {
+  .hero-media-layout,
+  .feature-grid,
+  .campaign-grid,
+  .lookbook-strip {
     grid-template-columns: 1fr;
   }
 }
