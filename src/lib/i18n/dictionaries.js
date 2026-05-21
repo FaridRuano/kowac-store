@@ -27,6 +27,8 @@ export const dictionaries = {
       campaignLabel: "Campaña",
     },
     actions: {
+      menu: "Menú",
+      closeMenu: "Cerrar menú",
       search: "Buscar",
       profile: "Perfil",
       wishlist: "Wishlist",
@@ -93,6 +95,8 @@ export const dictionaries = {
       campaignLabel: "Campaign",
     },
     actions: {
+      menu: "Menu",
+      closeMenu: "Close menu",
       search: "Search",
       profile: "Profile",
       wishlist: "Wishlist",

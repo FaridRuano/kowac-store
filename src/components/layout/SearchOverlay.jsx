@@ -1,6 +1,7 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
+import { useEffect } from "react";
 import { X } from "lucide-react";
 import Link from "next/link";
 
@@ -17,7 +18,24 @@ function formatPrice(value, locale) {
 }
 
 export default function SearchOverlay({ isOpen, query, onQueryChange, results = [], onClose }) {
-  const { dictionary, language, formatMessage } = useLanguage();
+  const { dictionary, language } = useLanguage();
+
+  useEffect(() => {
+    if (!isOpen) {
+      return undefined;
+    }
+
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+    };
+  }, [isOpen]);
 
   if (!isOpen) {
     return null;
@@ -43,20 +61,22 @@ export default function SearchOverlay({ isOpen, query, onQueryChange, results = 
               className={styles.input}
               autoFocus
             />
+
+            {query ? (
+              <button
+                type="button"
+                className={styles.clearButton}
+                aria-label="Limpiar búsqueda"
+                onClick={() => onQueryChange("")}
+              >
+                <X size={14} strokeWidth={1.7} />
+              </button>
+            ) : null}
           </div>
 
           <button type="button" onClick={onClose} className={styles.closeButton}>
             <X size={18} strokeWidth={2} />
           </button>
-        </div>
-
-        <div className={styles.metaRow}>
-          <span>
-            {query
-              ? formatMessage(dictionary.search.resultsFor, { query })
-              : dictionary.search.startTyping}
-          </span>
-          <span>{formatMessage(dictionary.search.productCount, { count: results.length })}</span>
         </div>
 
         <div className={styles.resultsRail}>

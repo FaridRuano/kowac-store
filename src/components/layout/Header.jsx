@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Heart, Search, ShoppingBag, User } from "lucide-react";
+import { Heart, Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -44,11 +44,14 @@ const navigation = [
 export default function Header() {
   const { dictionary } = useLanguage();
   const [activeMenuKey, setActiveMenuKey] = useState(null);
+  const [activeMobileMenuKey, setActiveMobileMenuKey] = useState(navigation[0].key);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   const activeMenu = navigation.find((item) => item.key === activeMenuKey) || null;
-  const hasOverlay = Boolean(activeMenu || searchOpen);
+  const activeMobileMenu = navigation.find((item) => item.key === activeMobileMenuKey) || navigation[0];
+  const hasOverlay = Boolean(activeMenu || searchOpen || mobileMenuOpen);
   const searchResults = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
 
@@ -70,6 +73,7 @@ export default function Header() {
 
   function handleOpenSearch() {
     setActiveMenuKey(null);
+    setMobileMenuOpen(false);
     setSearchOpen(true);
   }
 
@@ -79,11 +83,45 @@ export default function Header() {
 
   function handleCloseNavigation() {
     setActiveMenuKey(null);
+    setMobileMenuOpen(false);
+  }
+
+  function handleToggleMobileMenu() {
+    setSearchOpen(false);
+    setActiveMenuKey(null);
+    setActiveMobileMenuKey(navigation[0].key);
+    setMobileMenuOpen((currentValue) => !currentValue);
+  }
+
+  function handleCloseMobileMenu() {
+    setMobileMenuOpen(false);
   }
 
   return (
     <header className={styles.header}>
       <div className={styles.inner}>
+        <div className={styles.mobileActions}>
+          <button
+            type="button"
+            className={styles.iconButton}
+            aria-label={dictionary.actions.menu}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-navigation"
+            onClick={handleToggleMobileMenu}
+          >
+            <Menu size={18} strokeWidth={1.9} />
+          </button>
+
+          <button
+            type="button"
+            className={styles.iconButton}
+            aria-label={dictionary.actions.search}
+            onClick={handleOpenSearch}
+          >
+            <Search size={18} strokeWidth={1.9} />
+          </button>
+        </div>
+
         <div
           className={styles.menuArea}
           onMouseLeave={() => setActiveMenuKey(null)}
@@ -161,7 +199,7 @@ export default function Header() {
         <div className={styles.actions}>
           <button
             type="button"
-            className={styles.iconButton}
+            className={`${styles.iconButton} ${styles.desktopOnlyAction}`}
             aria-label={dictionary.actions.search}
             onClick={handleOpenSearch}
           >
@@ -172,7 +210,11 @@ export default function Header() {
             <User size={18} strokeWidth={1.9} />
           </Link>
 
-          <Link href="/wishlist" className={styles.iconLink} aria-label={dictionary.actions.wishlist}>
+          <Link
+            href="/wishlist"
+            className={`${styles.iconLink} ${styles.desktopOnlyAction}`}
+            aria-label={dictionary.actions.wishlist}
+          >
             <Heart size={18} strokeWidth={1.9} />
           </Link>
 
@@ -181,6 +223,84 @@ export default function Header() {
           </Link>
         </div>
       </div>
+
+      {mobileMenuOpen ? (
+        <div
+          id="mobile-navigation"
+          className={styles.mobileMenuPanel}
+          role="dialog"
+          aria-modal="true"
+          aria-label={dictionary.actions.menu}
+        >
+          <div className={styles.mobileMenuInner}>
+            <div className={styles.mobileMenuHeader}>
+              <Link
+                href="/wishlist"
+                className={styles.mobileMenuWishlist}
+                aria-label={dictionary.actions.wishlist}
+                onClick={handleCloseNavigation}
+              >
+                <Heart size={20} strokeWidth={1.9} />
+              </Link>
+
+              <button
+                type="button"
+                className={styles.mobileMenuClose}
+                aria-label={dictionary.actions.closeMenu}
+                onClick={handleCloseMobileMenu}
+              >
+                <X size={20} strokeWidth={1.9} />
+              </button>
+            </div>
+
+            <div className={styles.mobileMenuTabs} role="tablist" aria-label={dictionary.accessibility.mainNavigation}>
+              {navigation.map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeMobileMenu.key === item.key}
+                  className={`${styles.mobileMenuTab} ${activeMobileMenu.key === item.key ? styles.mobileMenuTabActive : ""}`}
+                  onClick={() => setActiveMobileMenuKey(item.key)}
+                >
+                  {dictionary.nav[item.labelKey]}
+                </button>
+              ))}
+            </div>
+
+            <div className={styles.mobileVisualStack}>
+              <div className={styles.mobileVisualCard}>
+                <span className={styles.submenuVisualLabel}>Espacio imagen 01</span>
+                <strong>{dictionary.nav[activeMobileMenu.promoKey]}</strong>
+              </div>
+
+              <div className={styles.mobileVisualCard}>
+                <span className={styles.submenuVisualLabel}>Espacio imagen 02</span>
+                <strong>
+                  {dictionary.nav.campaignLabel} {dictionary.nav[activeMobileMenu.labelKey].toLowerCase()}
+                </strong>
+              </div>
+            </div>
+
+            <nav className={styles.mobileNav} aria-label={dictionary.accessibility.mainNavigation}>
+              <div className={styles.mobileNavSection}>
+                <div className={styles.mobileNavLinks}>
+                  {activeMobileMenu.links.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={styles.mobileNavLink}
+                      onClick={handleCloseNavigation}
+                    >
+                      {dictionary.nav[link.labelKey]}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </nav>
+          </div>
+        </div>
+      ) : null}
 
       <SearchOverlay
         isOpen={searchOpen}
@@ -194,8 +314,9 @@ export default function Header() {
         className={`${styles.pageBackdrop} ${hasOverlay ? styles.pageBackdropActive : ""}`}
         aria-hidden="true"
         onClick={() => {
-          setActiveMenuKey(null);
+          handleCloseNavigation();
           handleCloseSearch();
+          handleCloseMobileMenu();
         }}
       />
     </header>
