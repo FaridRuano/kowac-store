@@ -1,5 +1,5 @@
-import ProductForm from "@/components/admin/ProductForm";
+import { redirect } from "next/navigation";
 
 export default function AdminProductsPage() {
-  return <ProductForm />;
+  redirect("/admin/catalogo/productos");
 }

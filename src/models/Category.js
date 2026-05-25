@@ -24,6 +24,12 @@ const CategorySchema = new Schema(
       default: "",
       trim: true,
     },
+    type: {
+      type: String,
+      enum: ["zapatos", "ropa"],
+      required: true,
+      index: true,
+    },
     isActive: {
       type: Boolean,
       default: true,

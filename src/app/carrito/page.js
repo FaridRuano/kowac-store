@@ -1,18 +1,13 @@
-import CartItem from "@/components/cart/CartItem";
-
-const sampleCart = [
-  {
-    productName: "Andes Boot",
-    sku: "KWC-AND-39-BRN",
-    quantity: 1,
-  },
-];
+import CartEmptyState from "@/components/cart/CartEmptyState";
+import { dictionaries, defaultLanguage } from "@/lib/i18n/dictionaries";
 
 export const metadata = {
   title: "Carrito | Kowac",
 };
 
 export default function CartPage() {
+  const dictionary = dictionaries[defaultLanguage];
+
   return (
     <section className="simple-page">
       <div className="container stack-lg">
@@ -23,10 +18,8 @@ export default function CartPage() {
           </h1>
         </div>
 
-        <div className="stack-md">
-          {sampleCart.map((item) => (
-            <CartItem key={item.sku} item={item} />
-          ))}
+        <div className="card-surface" style={{ minHeight: "420px" }}>
+          <CartEmptyState dictionary={dictionary} />
         </div>
       </div>
     </section>

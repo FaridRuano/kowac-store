@@ -38,6 +38,7 @@ export const categorySchema = z.object({
   slug: z.string().trim().optional(),
   description: z.string().trim().default(""),
   image: z.string().trim().default(""),
+  type: z.enum(["zapatos", "ropa"]),
   isActive: z.boolean().default(true),
 });
 

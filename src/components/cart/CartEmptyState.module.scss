@@ -1,0 +1,56 @@
+.emptyState {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: clamp(2rem, 7vw, 4rem) 1rem;
+  text-align: center;
+}
+
+.iconWrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 5.25rem;
+  height: 5.25rem;
+  border: 1px solid rgba(26, 24, 22, 0.1);
+  border-radius: 999px;
+  background: rgba(216, 199, 174, 0.24);
+  color: var(--color-text);
+  box-shadow: 0 18px 34px rgba(26, 24, 22, 0.08);
+}
+
+.copy {
+  max-width: 24rem;
+}
+
+.copy h2 {
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(2rem, 7vw, 3rem);
+  line-height: 0.98;
+}
+
+.copy p {
+  margin: 0.75rem 0 0;
+  color: var(--color-muted);
+  line-height: 1.65;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 560px) {
+  .actions {
+    width: min(100%, 21rem);
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

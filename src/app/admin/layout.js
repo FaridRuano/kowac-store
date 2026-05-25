@@ -1,12 +1,21 @@
-import AdminSidebar from "@/components/admin/AdminSidebar";
+import { redirect } from "next/navigation";
 
-export default function AdminLayout({ children }) {
+import { getCurrentUser } from "@/lib/session";
+
+export default async function AdminLayout({ children }) {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect("/login?redirect=/admin");
+  }
+
+  if (!user.isInternal) {
+    redirect("/perfil");
+  }
+
   return (
-    <section className="simple-page">
-      <div className="container admin-grid">
-        <AdminSidebar />
-        <div>{children}</div>
-      </div>
+    <section className="admin-module">
+      {children}
     </section>
   );
 }

@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Heart, Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 import { catalogProducts } from "@/lib/catalog";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import CartOverlay from "@/components/cart/CartOverlay";
 
 import SearchOverlay from "./SearchOverlay";
 import styles from "./Header.module.scss";
@@ -19,7 +20,7 @@ const navigation = [
     promoKey: "shoesPromo",
     links: [
       { href: "/zapatos?subtype=casuales", labelKey: "casual" },
-      { href: "/zapatos?subtype=chonkis", labelKey: "chunky" },
+      { href: "/zapatos?subtype=chunkys", labelKey: "chunky" },
       { href: "/zapatos?subtype=formales", labelKey: "formal" },
       { href: "/zapatos?subtype=botines", labelKey: "ankleBoots" },
       { href: "/zapatos?subtype=botas-cuero", labelKey: "leatherBoots" },
@@ -47,11 +48,14 @@ export default function Header() {
   const [activeMobileMenuKey, setActiveMobileMenuKey] = useState(navigation[0].key);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [authUser, setAuthUser] = useState(null);
 
   const activeMenu = navigation.find((item) => item.key === activeMenuKey) || null;
   const activeMobileMenu = navigation.find((item) => item.key === activeMobileMenuKey) || navigation[0];
-  const hasOverlay = Boolean(activeMenu || searchOpen || mobileMenuOpen);
+  const hasOverlay = Boolean(activeMenu || searchOpen || mobileMenuOpen || cartOpen);
+  const profileHref = authUser?.role === "admin" ? "/admin" : authUser ? "/perfil" : "/login";
   const searchResults = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
 
@@ -71,9 +75,35 @@ export default function Header() {
     });
   }, [searchQuery]);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadSession() {
+      try {
+        const response = await fetch("/api/auth/session", { cache: "no-store" });
+        const data = await response.json();
+
+        if (isMounted) {
+          setAuthUser(data.user?.email ? data.user : null);
+        }
+      } catch (error) {
+        if (isMounted) {
+          setAuthUser(null);
+        }
+      }
+    }
+
+    loadSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   function handleOpenSearch() {
     setActiveMenuKey(null);
     setMobileMenuOpen(false);
+    setCartOpen(false);
     setSearchOpen(true);
   }
 
@@ -88,6 +118,7 @@ export default function Header() {
 
   function handleToggleMobileMenu() {
     setSearchOpen(false);
+    setCartOpen(false);
     setActiveMenuKey(null);
     setActiveMobileMenuKey(navigation[0].key);
     setMobileMenuOpen((currentValue) => !currentValue);
@@ -95,6 +126,17 @@ export default function Header() {
 
   function handleCloseMobileMenu() {
     setMobileMenuOpen(false);
+  }
+
+  function handleOpenCart() {
+    setActiveMenuKey(null);
+    setMobileMenuOpen(false);
+    setSearchOpen(false);
+    setCartOpen(true);
+  }
+
+  function handleCloseCart() {
+    setCartOpen(false);
   }
 
   return (
@@ -206,7 +248,11 @@ export default function Header() {
             <Search size={18} strokeWidth={1.9} />
           </button>
 
-          <Link href="/perfil" className={styles.iconLink} aria-label={dictionary.actions.profile}>
+          <Link
+            href={profileHref}
+            className={styles.iconLink}
+            aria-label={dictionary.actions.profile}
+          >
             <User size={18} strokeWidth={1.9} />
           </Link>
 
@@ -218,9 +264,14 @@ export default function Header() {
             <Heart size={18} strokeWidth={1.9} />
           </Link>
 
-          <Link href="/carrito" className={styles.iconLink} aria-label={dictionary.actions.cart}>
+          <button
+            type="button"
+            className={styles.iconButton}
+            aria-label={dictionary.actions.cart}
+            onClick={handleOpenCart}
+          >
             <ShoppingBag size={18} strokeWidth={1.9} />
-          </Link>
+          </button>
         </div>
       </div>
 
@@ -310,6 +361,8 @@ export default function Header() {
         onClose={handleCloseSearch}
       />
 
+      <CartOverlay isOpen={cartOpen} onClose={handleCloseCart} />
+
       <div
         className={`${styles.pageBackdrop} ${hasOverlay ? styles.pageBackdropActive : ""}`}
         aria-hidden="true"
@@ -317,6 +370,7 @@ export default function Header() {
           handleCloseNavigation();
           handleCloseSearch();
           handleCloseMobileMenu();
+          handleCloseCart();
         }}
       />
     </header>

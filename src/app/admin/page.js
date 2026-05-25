@@ -1,18 +1,85 @@
+import { BarChart3, Factory, Package, ReceiptText, Settings, UsersRound } from "lucide-react";
+import Link from "next/link";
+
+import AdminLogoutIconButton from "@/components/auth/AdminLogoutIconButton";
+
 export const metadata = {
   title: "Admin | Kowac",
 };
 
+const modules = [
+  {
+    title: "Configuración",
+    description: "Empresa, usuarios, accesos y preferencias base del sistema.",
+    href: "/admin/configuracion",
+    icon: Settings,
+    status: "Disponible",
+  },
+  {
+    title: "Catálogo",
+    description: "Productos, categorías, variantes, precios e inventario comercial.",
+    href: "/admin/catalogo",
+    icon: Package,
+    status: "Disponible",
+  },
+  {
+    title: "Ventas",
+    description: "Pedidos, clientes, devoluciones y seguimiento de la operación online.",
+    href: "/admin/pedidos",
+    icon: ReceiptText,
+    status: "Próximo",
+  },
+  {
+    title: "Colaboradores",
+    description: "Equipo, permisos, áreas y responsabilidades internas.",
+    href: "/admin/configuracion",
+    icon: UsersRound,
+    status: "Próximo",
+  },
+  {
+    title: "Producción",
+    description: "Fabricación, materiales, tiempos y costos operativos.",
+    href: "/admin/configuracion",
+    icon: Factory,
+    status: "Futuro",
+  },
+  {
+    title: "Finanzas",
+    description: "Márgenes, egresos, reportes y lectura financiera del negocio.",
+    href: "/admin/configuracion",
+    icon: BarChart3,
+    status: "Futuro",
+  },
+];
+
 export default function AdminPage() {
   return (
-    <div className="card-surface" style={{ padding: "2rem" }}>
-      <div className="stack-sm">
-        <span className="eyebrow">Admin</span>
-        <h1 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: "2.8rem" }}>
-          Panel base de administración
-        </h1>
-        <p className="text-muted" style={{ margin: 0 }}>
-          Desde aquí crecerán catálogo, pedidos, clientes y control operativo del e-commerce.
-        </p>
+    <div className="admin-selector">
+      <Link href="/tienda" className="admin-selector__brand" aria-label="Volver a la tienda Kowac">
+        KOWAC
+      </Link>
+      <AdminLogoutIconButton className="admin-selector__logout" />
+
+      <div className="admin-selector__heading">
+        <h1>Módulos de gestión</h1>
+        <p>Selecciona el área de trabajo que quieres abrir.</p>
+      </div>
+
+      <div className="admin-selector__grid">
+        {modules.map((module) => {
+          const Icon = module.icon;
+
+          return (
+            <Link key={module.title} href={module.href} className="admin-selector__card">
+              <span className="admin-selector__status">{module.status}</span>
+              <Icon size={44} strokeWidth={1.55} aria-hidden="true" />
+              <div>
+                <h2>{module.title}</h2>
+                <p>{module.description}</p>
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );

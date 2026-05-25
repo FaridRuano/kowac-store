@@ -1,0 +1,55 @@
+.form {
+  display: grid;
+  gap: 1rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.5rem;
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.field span {
+  font-size: 0.88rem;
+}
+
+.field input {
+  width: 100%;
+  min-height: 3.35rem;
+  padding: 0 1rem;
+  border: 1px solid rgba(26, 24, 22, 0.12);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--color-text);
+  outline: none;
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.field input:focus {
+  border-color: rgba(26, 24, 22, 0.32);
+  background: white;
+  box-shadow: 0 0 0 4px rgba(216, 199, 174, 0.24);
+}
+
+.message {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(155, 48, 48, 0.18);
+  border-radius: 1rem;
+  background: rgba(155, 48, 48, 0.08);
+  color: #7f2626;
+  line-height: 1.5;
+}
+
+.form button {
+  width: 100%;
+}
+
+.form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.68;
+}

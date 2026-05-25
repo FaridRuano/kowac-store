@@ -23,8 +23,8 @@ const UserSchema = new Schema(
     },
     role: {
       type: String,
-      enum: ["admin", "staff"],
-      default: "staff",
+      enum: ["usuario", "admin"],
+      default: "usuario",
       index: true,
     },
     isActive: {

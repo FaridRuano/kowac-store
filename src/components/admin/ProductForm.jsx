@@ -27,27 +27,26 @@ export default function ProductForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="card-surface" style={{ padding: "1.5rem" }}>
-      <div className="stack-md">
-        <div>
-          <strong>Nuevo producto</strong>
-          <p className="text-muted" style={{ margin: "0.5rem 0 0" }}>
-            Formulario scaffold para conectar luego con `/api/products`.
-          </p>
-        </div>
+    <form onSubmit={handleSubmit} className="admin-product-form">
+      <div className="admin-product-form__header">
+        <strong>Información base</strong>
+        <p className="text-muted">
+          Formulario inicial para conectar luego con variantes, imágenes y `/api/products`.
+        </p>
+      </div>
 
-        <label className="stack-sm">
+      <div className="admin-product-form__grid">
+        <label>
           <span>Nombre</span>
           <input
             name="name"
             value={formData.name}
             onChange={handleChange}
             placeholder="Kowac Heritage Boot"
-            style={{ padding: "0.9rem 1rem", borderRadius: "1rem", border: "1px solid var(--color-border)" }}
           />
         </label>
 
-        <label className="stack-sm">
+        <label>
           <span>Precio base</span>
           <input
             name="price"
@@ -57,44 +56,31 @@ export default function ProductForm() {
             min="0"
             step="0.01"
             placeholder="129.90"
-            style={{ padding: "0.9rem 1rem", borderRadius: "1rem", border: "1px solid var(--color-border)" }}
           />
         </label>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "1rem" }}>
-          <label className="stack-sm">
-            <span>Género</span>
-            <select
-              name="gender"
-              value={formData.gender}
-              onChange={handleChange}
-              style={{ padding: "0.9rem 1rem", borderRadius: "1rem", border: "1px solid var(--color-border)" }}
-            >
-              <option value="hombre">Hombre</option>
-              <option value="mujer">Mujer</option>
-              <option value="unisex">Unisex</option>
-              <option value="niños">Niños</option>
-            </select>
-          </label>
+        <label>
+          <span>Género</span>
+          <select name="gender" value={formData.gender} onChange={handleChange}>
+            <option value="hombre">Hombre</option>
+            <option value="mujer">Mujer</option>
+            <option value="unisex">Unisex</option>
+            <option value="niños">Niños</option>
+          </select>
+        </label>
 
-          <label className="stack-sm">
-            <span>Tipo</span>
-            <select
-              name="type"
-              value={formData.type}
-              onChange={handleChange}
-              style={{ padding: "0.9rem 1rem", borderRadius: "1rem", border: "1px solid var(--color-border)" }}
-            >
-              <option value="zapatos">Zapatos</option>
-              <option value="ropa">Ropa</option>
-              <option value="accesorios">Accesorios</option>
-            </select>
-          </label>
-        </div>
+        <label>
+          <span>Tipo</span>
+          <select name="type" value={formData.type} onChange={handleChange}>
+            <option value="zapatos">Zapatos</option>
+            <option value="ropa">Ropa</option>
+            <option value="accesorios">Accesorios</option>
+          </select>
+        </label>
+      </div>
 
-        <button type="submit" className="button-primary">
-          Guardar borrador
-        </button>
+      <div className="admin-product-form__footer">
+        <button type="submit">Guardar borrador</button>
       </div>
     </form>
   );
