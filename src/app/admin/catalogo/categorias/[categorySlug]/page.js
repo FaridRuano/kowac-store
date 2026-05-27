@@ -22,6 +22,25 @@ function formatPrice(value) {
   }).format(value || 0);
 }
 
+function formatProductStatus(value) {
+  const statuses = {
+    active: "Activo",
+    draft: "Borrador",
+    inactive: "Inactivo",
+  };
+
+  return statuses[value] || value || "Sin estado";
+}
+
+function formatProductType(value) {
+  const types = {
+    ropa: "Ropa",
+    zapatos: "Calzado",
+  };
+
+  return types[value] || value || "Sin tipo";
+}
+
 async function getCategory(categorySlug) {
   await connectDB();
 
@@ -45,7 +64,7 @@ async function getCategory(categorySlug) {
 
 async function getProductsByCategory(categoryId) {
   const products = await Product.find({ category: categoryId })
-    .select("name slug type basePrice price images mediaGroups variants showInCatalog status isActive")
+    .select("name slug type basePrice price images mediaGroups showInCatalog status isActive")
     .sort({ name: 1 })
     .lean();
 
@@ -56,15 +75,8 @@ async function getProductsByCategory(categoryId) {
       .sort((firstMedia, secondMedia) => Number(secondMedia.isPrimary) - Number(firstMedia.isPrimary) || firstMedia.sortOrder - secondMedia.sortOrder)
       .map((media) => media.url);
 
-    const variantMediaUrls = (product.variants || [])
-      .flatMap((variant) => variant.media || [])
-      .filter((media) => media.type === "image" && media.url)
-      .sort((firstMedia, secondMedia) => Number(secondMedia.isPrimary) - Number(firstMedia.isPrimary) || firstMedia.sortOrder - secondMedia.sortOrder)
-      .map((media) => media.url);
-
     const images = [
       ...mediaGroupUrls,
-      ...variantMediaUrls,
       ...(product.images || []),
     ].filter(Boolean);
 
@@ -74,10 +86,9 @@ async function getProductsByCategory(categoryId) {
       name: product.name,
       price: product.basePrice || product.price,
       slug: product.slug,
-      status: product.status || (product.isActive ? "Activo" : "Inactivo"),
+      status: product.status || (product.isActive ? "active" : "inactive"),
       showInCatalog: product.showInCatalog,
       type: product.type,
-      variantsCount: product.variants?.length || 0,
     };
   });
 }
@@ -126,21 +137,24 @@ export default async function AdminCatalogCategoryProductsPage({ params }) {
                 className="admin-category-product-card__media"
                 style={product.images[0] ? { backgroundImage: `url(${product.images[0]})` } : undefined}
               >
-                {product.images[0] ? null : <span>{product.name.slice(0, 2).toUpperCase()}</span>}
+                {product.images[0] ? null : (
+                  <span>
+                    <strong>KOWAC</strong>
+                    <small>Imagen pendiente</small>
+                  </span>
+                )}
               </div>
 
               <div className="admin-category-product-card__content">
                 <strong>{product.name}</strong>
-                <span>{product.slug}</span>
+                <span>{formatProductType(product.type)}</span>
               </div>
 
               <div className="admin-category-product-card__meta">
                 <span>{formatPrice(product.price)}</span>
-                <span>{product.variantsCount} variante(s)</span>
-                <span>{product.images.length} imagen(es)</span>
                 <span>{product.showInCatalog ? "Visible" : "Oculto"}</span>
-                <span className={`admin-page__status ${product.status === "active" || product.status === "Activo" ? "admin-page__status--success" : "admin-page__status--muted"}`}>
-                  {product.status}
+                <span className={`admin-page__status ${product.status === "active" ? "admin-page__status--success" : "admin-page__status--muted"}`}>
+                  {formatProductStatus(product.status)}
                 </span>
               </div>
             </article>
