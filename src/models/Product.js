@@ -1,5 +1,188 @@
 import mongoose, { Schema } from "mongoose";
 
+const ProductMediaSchema = new Schema(
+  {
+    provider: {
+      type: String,
+      enum: ["vercel_blob", "r2", "cloudinary", "mux", "external"],
+      default: "external",
+    },
+    type: {
+      type: String,
+      enum: ["image", "video"],
+      default: "image",
+    },
+    url: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    secureUrl: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    storageKey: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    publicId: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    assetId: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    playbackId: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    alt: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    width: {
+      type: Number,
+      default: null,
+      min: 0,
+    },
+    height: {
+      type: Number,
+      default: null,
+      min: 0,
+    },
+    duration: {
+      type: Number,
+      default: null,
+      min: 0,
+    },
+    format: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    bytes: {
+      type: Number,
+      default: null,
+      min: 0,
+    },
+    sortOrder: {
+      type: Number,
+      default: 0,
+    },
+    isPrimary: {
+      type: Boolean,
+      default: false,
+    },
+    status: {
+      type: String,
+      enum: ["pending", "ready", "errored"],
+      default: "ready",
+    },
+  },
+  { _id: false, timestamps: true }
+);
+
+const ProductOptionValueSchema = new Schema(
+  {
+    label: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    value: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    hex: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+  },
+  { _id: false }
+);
+
+const ProductOptionSchema = new Schema(
+  {
+    key: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    label: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    values: {
+      type: [ProductOptionValueSchema],
+      default: [],
+    },
+  },
+  { _id: false }
+);
+
+const ProductDiscountSchema = new Schema(
+  {
+    type: {
+      type: String,
+      enum: ["inherit", "none", "percent", "fixed"],
+      default: "none",
+    },
+    value: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    startsAt: {
+      type: Date,
+      default: null,
+    },
+    endsAt: {
+      type: Date,
+      default: null,
+    },
+    isActive: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  { _id: false }
+);
+
+const ProductMediaGroupSchema = new Schema(
+  {
+    optionKey: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    optionValue: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    label: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    media: {
+      type: [ProductMediaSchema],
+      default: [],
+    },
+  },
+  { _id: false }
+);
+
 const ProductVariantSchema = new Schema(
   {
     sku: {
@@ -7,9 +190,14 @@ const ProductVariantSchema = new Schema(
       required: true,
       trim: true,
     },
+    optionValues: {
+      type: Map,
+      of: String,
+      default: {},
+    },
     colorName: {
       type: String,
-      required: true,
+      default: "",
       trim: true,
     },
     colorHex: {
@@ -19,22 +207,35 @@ const ProductVariantSchema = new Schema(
     },
     size: {
       type: String,
-      required: true,
+      default: "",
       trim: true,
     },
-    stock: {
+    costOverride: {
       type: Number,
-      default: 0,
+      default: null,
       min: 0,
     },
-    price: {
+    priceOverride: {
       type: Number,
-      required: true,
+      default: null,
       min: 0,
     },
-    images: {
-      type: [String],
+    compareAtPriceOverride: {
+      type: Number,
+      default: null,
+      min: 0,
+    },
+    discount: {
+      type: ProductDiscountSchema,
+      default: () => ({ type: "inherit" }),
+    },
+    media: {
+      type: [ProductMediaSchema],
       default: [],
+    },
+    showInCatalog: {
+      type: Boolean,
+      default: true,
     },
     isActive: {
       type: Boolean,
@@ -91,9 +292,25 @@ const ProductSchema = new Schema(
       required: true,
       index: true,
     },
+    status: {
+      type: String,
+      enum: ["draft", "active", "inactive"],
+      default: "draft",
+      index: true,
+    },
+    baseCost: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    basePrice: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
     price: {
       type: Number,
-      required: true,
+      default: 0,
       min: 0,
     },
     compareAtPrice: {
@@ -105,6 +322,18 @@ const ProductSchema = new Schema(
       type: [String],
       default: [],
     },
+    options: {
+      type: [ProductOptionSchema],
+      default: [],
+    },
+    mediaGroups: {
+      type: [ProductMediaGroupSchema],
+      default: [],
+    },
+    productDiscount: {
+      type: ProductDiscountSchema,
+      default: () => ({ type: "none" }),
+    },
     tags: {
       type: [String],
       default: [],
@@ -114,6 +343,11 @@ const ProductSchema = new Schema(
       default: [],
     },
     isFeatured: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    showInCatalog: {
       type: Boolean,
       default: false,
       index: true,

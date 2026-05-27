@@ -2,14 +2,65 @@ import { z } from "zod";
 
 const objectIdSchema = z.string().min(1);
 
+const productMediaSchema = z.object({
+  provider: z.enum(["vercel_blob", "r2", "cloudinary", "mux", "external"]).default("external"),
+  type: z.enum(["image", "video"]).default("image"),
+  url: z.string().trim().default(""),
+  secureUrl: z.string().trim().default(""),
+  storageKey: z.string().trim().default(""),
+  publicId: z.string().trim().default(""),
+  assetId: z.string().trim().default(""),
+  playbackId: z.string().trim().default(""),
+  alt: z.string().trim().default(""),
+  width: z.coerce.number().min(0).optional().nullable(),
+  height: z.coerce.number().min(0).optional().nullable(),
+  duration: z.coerce.number().min(0).optional().nullable(),
+  format: z.string().trim().default(""),
+  bytes: z.coerce.number().min(0).optional().nullable(),
+  sortOrder: z.coerce.number().default(0),
+  isPrimary: z.boolean().default(false),
+  status: z.enum(["pending", "ready", "errored"]).default("ready"),
+});
+
+const productOptionValueSchema = z.object({
+  label: z.string().trim().min(1),
+  value: z.string().trim().min(1),
+  hex: z.string().trim().regex(/^#[0-9a-fA-F]{6}$/).optional().or(z.literal("")),
+});
+
+const productOptionSchema = z.object({
+  key: z.string().trim().min(1),
+  label: z.string().trim().min(1),
+  values: z.array(productOptionValueSchema).default([]),
+});
+
+const productDiscountSchema = z.object({
+  type: z.enum(["inherit", "none", "percent", "fixed"]).default("none"),
+  value: z.coerce.number().min(0).default(0),
+  startsAt: z.coerce.date().optional().nullable(),
+  endsAt: z.coerce.date().optional().nullable(),
+  isActive: z.boolean().default(false),
+});
+
+const productMediaGroupSchema = z.object({
+  optionKey: z.string().trim().min(1),
+  optionValue: z.string().trim().min(1),
+  label: z.string().trim().default(""),
+  media: z.array(productMediaSchema).default([]),
+});
+
 export const productVariantSchema = z.object({
   sku: z.string().trim().min(1),
-  colorName: z.string().trim().min(1),
+  optionValues: z.record(z.string(), z.string()).default({}),
+  colorName: z.string().trim().optional().or(z.literal("")),
   colorHex: z.string().trim().optional().or(z.literal("")),
-  size: z.string().trim().min(1),
-  stock: z.coerce.number().int().min(0).default(0),
-  price: z.coerce.number().min(0),
-  images: z.array(z.string().trim()).default([]),
+  size: z.string().trim().optional().or(z.literal("")),
+  costOverride: z.coerce.number().min(0).optional().nullable(),
+  priceOverride: z.coerce.number().min(0).optional().nullable(),
+  compareAtPriceOverride: z.coerce.number().min(0).optional().nullable(),
+  discount: productDiscountSchema.default({ type: "inherit" }),
+  media: z.array(productMediaSchema).default([]),
+  showInCatalog: z.boolean().default(true),
   isActive: z.boolean().default(true),
 });
 
@@ -22,12 +73,19 @@ export const productSchema = z.object({
   category: objectIdSchema.optional().or(z.literal("")),
   gender: z.enum(["hombre", "mujer", "unisex", "niños"]),
   type: z.enum(["zapatos", "ropa", "accesorios"]),
-  price: z.coerce.number().min(0),
+  status: z.enum(["draft", "active", "inactive"]).default("draft"),
+  baseCost: z.coerce.number().min(0).default(0),
+  basePrice: z.coerce.number().min(0).default(0),
+  price: z.coerce.number().min(0).default(0),
   compareAtPrice: z.coerce.number().min(0).optional().nullable(),
   images: z.array(z.string().trim()).default([]),
+  options: z.array(productOptionSchema).default([]),
+  mediaGroups: z.array(productMediaGroupSchema).default([]),
+  productDiscount: productDiscountSchema.default({ type: "none" }),
   tags: z.array(z.string().trim()).default([]),
   variants: z.array(productVariantSchema).default([]),
   isFeatured: z.boolean().default(false),
+  showInCatalog: z.boolean().default(false),
   isActive: z.boolean().default(true),
 });
 

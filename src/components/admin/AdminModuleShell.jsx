@@ -31,16 +31,26 @@ const moduleConfigs = {
       { href: "/admin/catalogo/categorias", label: "Categorías" },
       { href: "/admin/catalogo/productos", label: "Productos" },
       { href: "/admin/catalogo/nuevo-producto", label: "Nuevo producto" },
+      { href: "/admin/catalogo/variantes", label: "Inventario" },
     ],
     titles: {
       "/admin/catalogo": "Catálogo",
       "/admin/catalogo/categorias": "Categorías",
       "/admin/catalogo/productos": "Productos",
       "/admin/catalogo/nuevo-producto": "Nuevo producto",
+      "/admin/catalogo/variantes": "Inventario",
     },
     getTitle(pathname) {
       if (pathname.startsWith("/admin/catalogo/categorias/")) {
         return "Productos por categoría";
+      }
+
+      if (pathname.startsWith("/admin/catalogo/productos/")) {
+        return "Detalle de producto";
+      }
+
+      if (pathname.startsWith("/admin/catalogo/variantes/")) {
+        return "Detalle de inventario";
       }
 
       return this.titles[pathname] || this.fallbackTitle;

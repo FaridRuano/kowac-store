@@ -11,6 +11,48 @@ function normalizeProductCategory(value) {
   return isValidObjectId(value) ? value : undefined;
 }
 
+function normalizeProductPricing(productData) {
+  const basePrice = productData.basePrice || productData.price || 0;
+
+  return {
+    ...productData,
+    basePrice,
+    price: productData.price || basePrice,
+  };
+}
+
+function buildDefaultSizeOption(type) {
+  const defaultSizes = {
+    ropa: ["XS", "S", "M", "L", "XL"],
+    zapatos: ["35", "36", "37", "38", "39"],
+  };
+  const sizes = defaultSizes[type] || [];
+
+  if (!sizes.length) {
+    return null;
+  }
+
+  return {
+    key: "size",
+    label: "Talla",
+    values: sizes.map((size) => ({
+      label: size,
+      value: size.toLowerCase(),
+    })),
+  };
+}
+
+function normalizeProductOptions(productData) {
+  const hasSizeOption = productData.options?.some((option) => option.key === "size" && option.values?.length);
+  const defaultSizeOption = buildDefaultSizeOption(productData.type);
+
+  if (hasSizeOption || !defaultSizeOption) {
+    return productData.options || [];
+  }
+
+  return [defaultSizeOption, ...(productData.options || [])];
+}
+
 export async function GET(request) {
   try {
     await connectDB();
@@ -80,7 +122,8 @@ export async function POST(request) {
     const slug = parsedData.slug ? createSlug(parsedData.slug) : createSlug(parsedData.name);
 
     const product = await Product.create({
-      ...parsedData,
+      ...normalizeProductPricing(parsedData),
+      options: normalizeProductOptions(parsedData),
       slug,
       category: normalizeProductCategory(parsedData.category) || null,
     });

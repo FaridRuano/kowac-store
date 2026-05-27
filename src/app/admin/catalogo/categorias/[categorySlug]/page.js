@@ -45,23 +45,37 @@ async function getCategory(categorySlug) {
 
 async function getProductsByCategory(categoryId) {
   const products = await Product.find({ category: categoryId })
-    .select("name slug type price images variants isActive")
+    .select("name slug type basePrice price images mediaGroups variants showInCatalog status isActive")
     .sort({ name: 1 })
     .lean();
 
   return products.map((product) => {
+    const mediaGroupUrls = (product.mediaGroups || [])
+      .flatMap((group) => group.media || [])
+      .filter((media) => media.type === "image" && media.url)
+      .sort((firstMedia, secondMedia) => Number(secondMedia.isPrimary) - Number(firstMedia.isPrimary) || firstMedia.sortOrder - secondMedia.sortOrder)
+      .map((media) => media.url);
+
+    const variantMediaUrls = (product.variants || [])
+      .flatMap((variant) => variant.media || [])
+      .filter((media) => media.type === "image" && media.url)
+      .sort((firstMedia, secondMedia) => Number(secondMedia.isPrimary) - Number(firstMedia.isPrimary) || firstMedia.sortOrder - secondMedia.sortOrder)
+      .map((media) => media.url);
+
     const images = [
+      ...mediaGroupUrls,
+      ...variantMediaUrls,
       ...(product.images || []),
-      ...(product.variants || []).flatMap((variant) => variant.images || []),
     ].filter(Boolean);
 
     return {
       id: product._id.toString(),
       images,
       name: product.name,
-      price: product.price,
+      price: product.basePrice || product.price,
       slug: product.slug,
-      status: product.isActive ? "Activo" : "Inactivo",
+      status: product.status || (product.isActive ? "Activo" : "Inactivo"),
+      showInCatalog: product.showInCatalog,
       type: product.type,
       variantsCount: product.variants?.length || 0,
     };
@@ -124,7 +138,8 @@ export default async function AdminCatalogCategoryProductsPage({ params }) {
                 <span>{formatPrice(product.price)}</span>
                 <span>{product.variantsCount} variante(s)</span>
                 <span>{product.images.length} imagen(es)</span>
-                <span className={`admin-page__status ${product.status === "Activo" ? "admin-page__status--success" : "admin-page__status--muted"}`}>
+                <span>{product.showInCatalog ? "Visible" : "Oculto"}</span>
+                <span className={`admin-page__status ${product.status === "active" || product.status === "Activo" ? "admin-page__status--success" : "admin-page__status--muted"}`}>
                   {product.status}
                 </span>
               </div>

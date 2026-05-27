@@ -10,6 +10,48 @@ function buildLookup(id) {
   return isValidObjectId(id) ? { _id: id } : { slug: id };
 }
 
+function normalizeProductPricing(productData) {
+  if (!productData.basePrice && !productData.price) {
+    return productData;
+  }
+
+  const basePrice = productData.basePrice || productData.price || 0;
+
+  return {
+    ...productData,
+    basePrice,
+    price: productData.price || basePrice,
+  };
+}
+
+function normalizeProductCategory(value) {
+  if (!value) {
+    return null;
+  }
+
+  return isValidObjectId(value) ? value : undefined;
+}
+
+function normalizeProductPayload(productData) {
+  const nextData = normalizeProductPricing(productData);
+
+  if (Object.prototype.hasOwnProperty.call(nextData, "category")) {
+    nextData.category = normalizeProductCategory(nextData.category) || null;
+  }
+
+  return nextData;
+}
+
+function pickSubmittedFields(parsedData, body) {
+  return Object.keys(body).reduce((nextData, key) => {
+    if (Object.prototype.hasOwnProperty.call(parsedData, key)) {
+      nextData[key] = parsedData[key];
+    }
+
+    return nextData;
+  }, {});
+}
+
 export async function GET(_, context) {
   try {
     await connectDB();
@@ -38,16 +80,17 @@ export async function PATCH(request, context) {
     const { id } = await context.params;
     const body = await request.json();
     const parsedData = productUpdateSchema.parse(body);
+    const updateData = pickSubmittedFields(parsedData, body);
 
-    if (parsedData.slug) {
-      parsedData.slug = createSlug(parsedData.slug);
+    if (updateData.slug) {
+      updateData.slug = createSlug(updateData.slug);
     }
 
-    if (parsedData.name && !parsedData.slug) {
-      parsedData.slug = createSlug(parsedData.name);
+    if (updateData.name && !updateData.slug) {
+      updateData.slug = createSlug(updateData.name);
     }
 
-    const product = await Product.findOneAndUpdate(buildLookup(id), parsedData, {
+    const product = await Product.findOneAndUpdate(buildLookup(id), normalizeProductPayload(updateData), {
       new: true,
       runValidators: true,
     });
