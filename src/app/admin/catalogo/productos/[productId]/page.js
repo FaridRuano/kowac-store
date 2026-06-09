@@ -4,8 +4,11 @@ import { notFound } from "next/navigation";
 import { isValidObjectId } from "mongoose";
 
 import { connectDB } from "@/lib/db";
+import "@/models/Category";
 import Product from "@/models/Product";
+import ProductColorMediaManager from "@/components/admin/ProductColorMediaManager";
 import ProductOptionsManager from "@/components/admin/ProductOptionsManager";
+import ProductRealVariantsTable from "@/components/admin/ProductRealVariantsTable";
 import ProductVariant from "@/models/ProductVariant";
 
 export async function generateMetadata({ params }) {
@@ -43,6 +46,16 @@ function formatProductType(value) {
   return types[value] || value || "Sin tipo";
 }
 
+function formatApparelFit(value) {
+  const fits = {
+    fit: "Fit",
+    normal: "Normal",
+    oversize: "Oversize",
+  };
+
+  return fits[value] || "Sin corte";
+}
+
 function buildLookup(value) {
   return isValidObjectId(value) ? { _id: value } : { slug: value };
 }
@@ -62,26 +75,79 @@ function countConfiguredVariants(product) {
   return sizesCount || colorsCount;
 }
 
+function serializeMedia(mediaItems = []) {
+  return mediaItems
+    .map((media) => ({
+      alt: media.alt || "",
+      bytes: media.bytes || null,
+      format: media.format || "",
+      height: media.height || null,
+      isFeatured: Boolean(media.isFeatured),
+      isPrimary: Boolean(media.isPrimary),
+      isSecondary: Boolean(media.isSecondary),
+      publicId: media.publicId || media.storageKey || "",
+      secureUrl: media.secureUrl || media.url || "",
+      sortOrder: media.sortOrder || 0,
+      url: media.url || media.secureUrl || "",
+      width: media.width || null,
+    }))
+    .slice()
+    .sort((firstMedia, secondMedia) =>
+      Number(secondMedia.isPrimary) - Number(firstMedia.isPrimary) ||
+      Number(secondMedia.isSecondary) - Number(firstMedia.isSecondary) ||
+      Number(secondMedia.isFeatured) - Number(firstMedia.isFeatured) ||
+      (firstMedia.sortOrder || 0) - (secondMedia.sortOrder || 0)
+    );
+}
+
+function getColorValueFromVariant(variant) {
+  if (variant.optionValues?.get) {
+    return variant.optionValues.get("color") || "";
+  }
+
+  return variant.optionValues?.color || "";
+}
+
+function getColorImage(mediaGroups, colorValue, fallbackAlt) {
+  const mediaGroup = mediaGroups.find((group) => group.optionKey === "color" && group.optionValue === colorValue);
+  const primaryMedia = mediaGroup?.media?.[0] || null;
+
+  return {
+    alt: primaryMedia?.alt || fallbackAlt,
+    url: primaryMedia?.secureUrl || primaryMedia?.url || "",
+  };
+}
+
 async function getProduct(productId) {
   await connectDB();
 
   const product = await Product.findOne(buildLookup(productId))
     .populate("category", "name slug")
-    .select("name slug type category baseCost basePrice price status showInCatalog options variants shortDescription description updatedAt")
+    .select("name slug type apparelFit category baseCost basePrice price status showInCatalog options variants mediaGroups shortDescription description updatedAt")
     .lean();
 
   if (!product) {
     return null;
   }
 
-  const realVariantsCount = await ProductVariant.countDocuments({
+  const realVariants = await ProductVariant.find({
     product: product._id,
     isActive: true,
-  });
+  })
+    .select("name sku size colorName colorHex stock price status showInCatalog optionValues optionSignature updatedAt")
+    .sort({ size: 1, colorName: 1, updatedAt: -1 })
+    .lean();
+  const mediaGroups = (product.mediaGroups || []).map((group) => ({
+    label: group.label || "",
+    media: serializeMedia(group.media || []),
+    optionKey: group.optionKey,
+    optionValue: group.optionValue,
+  }));
 
   return {
     baseCost: product.baseCost || 0,
     basePrice: product.basePrice || product.price || 0,
+    apparelFit: product.apparelFit || "",
     category: product.category?.name || "Sin categoría",
     description: product.description || "",
     id: product._id.toString(),
@@ -95,12 +161,38 @@ async function getProduct(productId) {
         value: value.value,
       })),
     })),
+    mediaGroups,
     shortDescription: product.shortDescription || "",
     showInCatalog: product.showInCatalog,
     slug: product.slug,
     status: product.status || "draft",
+    rawType: product.type,
     type: formatProductType(product.type),
-    variantsCount: realVariantsCount || countConfiguredVariants(product),
+    variants: realVariants.map((variant) => {
+      const colorValue = getColorValueFromVariant(variant);
+      const primaryImage = getColorImage(
+        mediaGroups,
+        colorValue,
+        variant.name
+      );
+
+      return {
+        colorHex: variant.colorHex || "",
+        colorName: variant.colorName || "",
+        id: variant._id.toString(),
+        imageAlt: primaryImage.alt,
+        name: variant.name,
+        optionSignature: variant.optionSignature,
+        price: variant.price || 0,
+        primaryImage: primaryImage.url,
+        showInCatalog: Boolean(variant.showInCatalog),
+        size: variant.size || "",
+        sku: variant.sku,
+        status: variant.status || "draft",
+        stock: variant.stock || 0,
+      };
+    }),
+    variantsCount: realVariants.length || countConfiguredVariants(product),
   };
 }
 
@@ -124,7 +216,7 @@ export default async function AdminCatalogProductDetailPage({ params }) {
           <span className="eyebrow">Producto</span>
           <h1>{product.name}</h1>
           <p className="text-muted">
-            Administra la información base del producto. Aquí agregaremos variantes, media y ajustes por variante.
+            Administra la información base del producto. Las imágenes se gestionan por color y se comparten entre sus tallas.
           </p>
         </div>
         <span className={`admin-page__status ${product.status === "active" ? "admin-page__status--success" : "admin-page__status--muted"}`}>
@@ -172,11 +264,29 @@ export default async function AdminCatalogProductDetailPage({ params }) {
               <dt>Descripción corta</dt>
               <dd>{product.shortDescription || "Sin descripción corta"}</dd>
             </div>
+            {product.rawType === "ropa" ? (
+              <div>
+                <dt>Corte</dt>
+                <dd>{formatApparelFit(product.apparelFit)}</dd>
+              </div>
+            ) : null}
           </dl>
         </section>
       </div>
 
-      <ProductOptionsManager productId={product.id} productName={product.name} options={product.options} />
+      <ProductOptionsManager
+        existingVariantSignatures={product.variants.map((variant) => variant.optionSignature).filter(Boolean)}
+        productId={product.id}
+        productName={product.name}
+        options={product.options}
+      />
+      <ProductColorMediaManager
+        colors={product.options.find((option) => option.key === "color")?.values || []}
+        mediaGroups={product.mediaGroups}
+        productId={product.id}
+        productName={product.name}
+      />
+      <ProductRealVariantsTable variants={product.variants} />
     </div>
   );
 }

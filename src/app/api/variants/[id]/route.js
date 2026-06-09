@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isValidObjectId, Types } from "mongoose";
 
 import { connectDB } from "@/lib/db";
+import { getCurrentInternalUser } from "@/lib/session";
 import ProductVariant from "@/models/ProductVariant";
 
 const allowedFields = new Set([
@@ -14,6 +15,8 @@ const allowedFields = new Set([
   "status",
   "showInCatalog",
   "isFeatured",
+  "isNewArrival",
+  "isTrending",
 ]);
 
 function buildMongoLookup(id) {
@@ -69,11 +72,25 @@ function normalizeVariantUpdate(body) {
     updateData.isFeatured = Boolean(updateData.isFeatured);
   }
 
+  if (Object.prototype.hasOwnProperty.call(updateData, "isNewArrival")) {
+    updateData.isNewArrival = Boolean(updateData.isNewArrival);
+  }
+
+  if (Object.prototype.hasOwnProperty.call(updateData, "isTrending")) {
+    updateData.isTrending = Boolean(updateData.isTrending);
+  }
+
   return updateData;
 }
 
 export async function PATCH(request, context) {
   try {
+    const user = await getCurrentInternalUser();
+
+    if (!user) {
+      return NextResponse.json({ message: "No autorizado." }, { status: 401 });
+    }
+
     await connectDB();
 
     const { id } = await context.params;

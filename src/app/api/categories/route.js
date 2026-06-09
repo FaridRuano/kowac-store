@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { connectDB } from "@/lib/db";
+import { getCurrentInternalUser } from "@/lib/session";
 import { createSlug } from "@/lib/slug";
 import { categorySchema } from "@/lib/validators";
 import Category from "@/models/Category";
@@ -22,6 +23,12 @@ export async function GET() {
 
 export async function POST(request) {
   try {
+    const user = await getCurrentInternalUser();
+
+    if (!user) {
+      return NextResponse.json({ message: "No autorizado." }, { status: 401 });
+    }
+
     await connectDB();
 
     const body = await request.json();

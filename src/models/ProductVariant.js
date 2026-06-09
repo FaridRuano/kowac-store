@@ -32,6 +32,11 @@ const VariantMediaSchema = new Schema(
       default: "",
       trim: true,
     },
+    assetId: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     playbackId: {
       type: String,
       default: "",
@@ -46,7 +51,35 @@ const VariantMediaSchema = new Schema(
       type: Number,
       default: 0,
     },
+    width: {
+      type: Number,
+      default: null,
+      min: 0,
+    },
+    height: {
+      type: Number,
+      default: null,
+      min: 0,
+    },
+    format: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    bytes: {
+      type: Number,
+      default: null,
+      min: 0,
+    },
     isPrimary: {
+      type: Boolean,
+      default: false,
+    },
+    isSecondary: {
+      type: Boolean,
+      default: false,
+    },
+    isFeatured: {
       type: Boolean,
       default: false,
     },
@@ -74,6 +107,36 @@ const VariantDiscountSchema = new Schema(
     isActive: {
       type: Boolean,
       default: false,
+    },
+  },
+  { _id: false }
+);
+
+const StockMovementSchema = new Schema(
+  {
+    type: {
+      type: String,
+      enum: ["in", "out"],
+      required: true,
+    },
+    quantity: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+    note: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    stockAfter: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
     },
   },
   { _id: false }
@@ -148,6 +211,10 @@ const ProductVariantSchema = new Schema(
       default: 0,
       min: 0,
     },
+    stockMovements: {
+      type: [StockMovementSchema],
+      default: [],
+    },
     cost: {
       type: Number,
       default: 0,
@@ -187,6 +254,16 @@ const ProductVariantSchema = new Schema(
       default: false,
       index: true,
     },
+    isNewArrival: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    isTrending: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
     isActive: {
       type: Boolean,
       default: true,
@@ -203,7 +280,13 @@ ProductVariantSchema.index({ product: 1, optionSignature: 1 }, { unique: true })
 if (
   mongoose.models.ProductVariant &&
   (!mongoose.models.ProductVariant.schema.path("discount") ||
-    !mongoose.models.ProductVariant.schema.path("isFeatured"))
+    !mongoose.models.ProductVariant.schema.path("isFeatured") ||
+    !mongoose.models.ProductVariant.schema.path("isNewArrival") ||
+    !mongoose.models.ProductVariant.schema.path("isTrending") ||
+    !mongoose.models.ProductVariant.schema.path("stockMovements") ||
+    !mongoose.models.ProductVariant.schema.path("media.0.width") ||
+    !mongoose.models.ProductVariant.schema.path("media.0.isSecondary") ||
+    !mongoose.models.ProductVariant.schema.path("media.0.isFeatured"))
 ) {
   mongoose.deleteModel("ProductVariant");
 }

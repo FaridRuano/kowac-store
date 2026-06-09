@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Package, PanelLeftOpen, Settings } from "lucide-react";
+import { Bell, Package, PanelLeftOpen, ReceiptText, Settings } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -51,6 +51,62 @@ const moduleConfigs = {
 
       if (pathname.startsWith("/admin/catalogo/variantes/")) {
         return "Detalle de inventario";
+      }
+
+      return this.titles[pathname] || this.fallbackTitle;
+    },
+  },
+  ventas: {
+    fallbackTitle: "Ventas",
+    sectionLabel: "Ventas",
+    sectionIcon: ReceiptText,
+    items: [
+      { href: "/admin/resumen", label: "Resumen" },
+      { href: "/admin/clientes", label: "Clientes" },
+      { href: "/admin/ventas", label: "Ventas directas" },
+      { href: "/admin/ventas-online", label: "Ventas online" },
+      { href: "/admin/pedidos", label: "Pedidos" },
+    ],
+    titles: {
+      "/admin/resumen": "Resumen",
+      "/admin/clientes": "Clientes",
+      "/admin/clientes/nuevo": "Nuevo cliente",
+      "/admin/ventas": "Ventas directas",
+      "/admin/ventas-online": "Ventas online",
+      "/admin/pedidos": "Pedidos a fábrica",
+      "/admin/pedidos/nuevo": "Nuevo pedido a fábrica",
+    },
+    getTitle(pathname) {
+      if (pathname.includes("/editar")) {
+        return "Editar cliente";
+      }
+
+      if (pathname.includes("/direcciones/nueva")) {
+        return "Nueva dirección";
+      }
+
+      if (pathname.startsWith("/admin/clientes/") && pathname !== "/admin/clientes/nuevo") {
+        return "Detalle de cliente";
+      }
+
+      if (pathname === "/admin/ventas/nueva") {
+        return "Nueva venta directa";
+      }
+
+      if (pathname.startsWith("/admin/ventas/")) {
+        return "Detalle de venta directa";
+      }
+
+      if (pathname.startsWith("/admin/ventas-online/")) {
+        return "Detalle de venta online";
+      }
+
+      if (pathname === "/admin/pedidos/nuevo") {
+        return "Nuevo pedido a fábrica";
+      }
+
+      if (pathname.startsWith("/admin/pedidos/")) {
+        return "Detalle de pedido";
       }
 
       return this.titles[pathname] || this.fallbackTitle;

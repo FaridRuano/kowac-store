@@ -30,7 +30,7 @@ export const authOptions = {
 
         await connectDB();
 
-        const user = await User.findOne({ email, isActive: true }).select("+password");
+        const user = await User.findOne({ email, isActive: true }).select("+password customer");
 
         if (!user) {
           return null;
@@ -43,6 +43,7 @@ export const authOptions = {
         }
 
         return {
+          customerId: user.customer?.toString() || null,
           id: user._id.toString(),
           name: user.name,
           email: user.email,
@@ -54,6 +55,7 @@ export const authOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        token.customerId = user.customerId;
         token.id = user.id;
         token.role = user.role;
       }
@@ -62,6 +64,7 @@ export const authOptions = {
     },
     async session({ session, token }) {
       if (session.user) {
+        session.user.customerId = token.customerId;
         session.user.id = token.id;
         session.user.role = token.role;
       }

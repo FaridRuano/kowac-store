@@ -35,7 +35,7 @@ async function getEditableProduct(productId) {
   await connectDB();
 
   const product = await Product.findOne(buildProductLookup(productId))
-    .select("name type gender category baseCost basePrice price status showInCatalog shortDescription description")
+    .select("name type apparelFit gender category baseCost basePrice price status showInCatalog shortDescription description")
     .lean();
 
   if (!product) {
@@ -43,6 +43,7 @@ async function getEditableProduct(productId) {
   }
 
   return {
+    apparelFit: product.apparelFit || "",
     baseCost: product.baseCost || 0,
     basePrice: product.basePrice || product.price || 0,
     category: product.category?.toString() || "",

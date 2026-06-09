@@ -10,7 +10,12 @@ import AdminToast from "@/components/admin/AdminToast";
 const emptySizeForm = { value: "" };
 const emptyColorForm = { hex: "#b77a38", name: "" };
 
-export default function ProductOptionsManager({ productId, productName = "Producto", options = [] }) {
+export default function ProductOptionsManager({
+  existingVariantSignatures = [],
+  productId,
+  productName = "Producto",
+  options = [],
+}) {
   const router = useRouter();
   const [sizes, setSizes] = useState(() => getOptionValues(options, "size"));
   const [colors, setColors] = useState(() => getOptionValues(options, "color"));
@@ -30,7 +35,16 @@ export default function ProductOptionsManager({ productId, productName = "Produc
     () => buildPossibleVariants(productName, sizes, colors),
     [colors, productName, sizes]
   );
+  const existingSignatures = useMemo(
+    () => new Set(existingVariantSignatures),
+    [existingVariantSignatures]
+  );
+  const variantsToGenerate = useMemo(
+    () => possibleVariants.filter((variant) => !existingSignatures.has(variant.optionSignature)),
+    [existingSignatures, possibleVariants]
+  );
   const hasChanges = JSON.stringify(normalizedOptions) !== JSON.stringify(savedOptions);
+  const canGenerateVariants = !isGenerating && !hasChanges && variantsToGenerate.length > 0;
 
   function handleAddSize(event) {
     event.preventDefault();
@@ -323,15 +337,19 @@ export default function ProductOptionsManager({ productId, productName = "Produc
         <div className="admin-product-options__panel-header">
           <strong>Variantes posibles</strong>
           <div className="admin-product-options__variants-actions">
-            <span>{possibleVariants.length} combinación(es)</span>
+            <span>
+              {variantsToGenerate.length
+                ? `${variantsToGenerate.length} pendiente(s)`
+                : `${possibleVariants.length} generada(s)`}
+            </span>
             <button
               type="button"
               onClick={handleGenerateVariants}
-              disabled={isGenerating || hasChanges || !possibleVariants.length}
-              title={hasChanges ? "Guarda las opciones antes de generar variantes" : "Generar variantes reales"}
+              disabled={!canGenerateVariants}
+              title={getGenerateButtonTitle({ hasChanges, possibleVariants, variantsToGenerate })}
             >
               <Sparkles size={16} strokeWidth={1.9} aria-hidden="true" />
-              {isGenerating ? "Generando..." : "Generar variantes"}
+              {isGenerating ? "Generando..." : "Generar pendientes"}
             </button>
           </div>
         </div>
@@ -452,18 +470,41 @@ function buildPossibleVariants(productName, sizes, colors) {
     variantColors.map((color) => {
       const sizeLabel = size.label;
       const colorLabel = color.label;
+      const hasSize = size.value !== "sin-talla";
+      const hasColor = color.value !== "sin-color";
       const nameParts = [productName, sizeLabel, colorLabel]
         .filter(Boolean);
+      const optionSignature = [
+        hasSize ? `size:${size.value}` : "size:base",
+        hasColor ? `color:${color.value}` : "color:base",
+      ].join("|");
 
       return {
         color: colorLabel,
         colorHex: color.hex,
         key: `${size.value}-${color.value}`,
         name: nameParts.join(" "),
+        optionSignature,
         size: sizeLabel,
       };
     })
   );
+}
+
+function getGenerateButtonTitle({ hasChanges, possibleVariants, variantsToGenerate }) {
+  if (hasChanges) {
+    return "Guarda las opciones antes de generar presentaciones";
+  }
+
+  if (!possibleVariants.length) {
+    return "Agrega al menos una talla o un color";
+  }
+
+  if (!variantsToGenerate.length) {
+    return "Todas las presentaciones ya fueron generadas";
+  }
+
+  return "Generar presentaciones pendientes";
 }
 
 function normalizeHex(value) {

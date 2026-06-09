@@ -332,7 +332,6 @@
   flex-direction: column;
   gap: 0.85rem;
   padding: 1.2rem 0;
-  border-bottom: 1px solid rgba(26, 24, 22, 0.08);
 }
 
 .mobileNavTitle {
@@ -353,10 +352,13 @@
 .mobileNavLink {
   display: block;
   padding: 0 0 0.9rem;
-  border-bottom: 1px solid rgba(26, 24, 22, 0.12);
   color: var(--color-muted);
   font-size: 0.94rem;
   line-height: 1.35;
+}
+
+.mobileNavLink:not(:last-child) {
+  border-bottom: 1px solid rgba(26, 24, 22, 0.12);
 }
 
 .mobileVisualStack {

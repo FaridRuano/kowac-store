@@ -24,10 +24,10 @@ const modules = [
   },
   {
     title: "Ventas",
-    description: "Pedidos, clientes, devoluciones y seguimiento de la operación online.",
-    href: "/admin/pedidos",
+    description: "Clientes, ventas directas, ventas online y pedidos de producción.",
+    href: "/admin/ventas",
     icon: ReceiptText,
-    status: "Próximo",
+    status: "Disponible",
   },
   {
     title: "Colaboradores",
@@ -55,7 +55,7 @@ const modules = [
 export default function AdminPage() {
   return (
     <div className="admin-selector">
-      <Link href="/tienda" className="admin-selector__brand" aria-label="Volver a la tienda Kowac">
+      <Link href="/" className="admin-selector__brand" aria-label="Volver al inicio de Kowac">
         KOWAC
       </Link>
       <AdminLogoutIconButton className="admin-selector__logout" />

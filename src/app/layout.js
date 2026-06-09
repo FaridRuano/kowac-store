@@ -20,7 +20,7 @@ const bodyFont = Montserrat({
 
 export const metadata = {
   title: "Kowac Store",
-  description: "Tienda online de Kowac para moda, calzado y accesorios.",
+  description: "Tienda online de Kowac para moda y calzado.",
 };
 
 export default function RootLayout({ children }) {

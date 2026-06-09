@@ -36,7 +36,6 @@ const legalLinks = [
 
 const sitemapLinks = [
   { href: "/", key: "home" },
-  { href: "/tienda", key: "shop" },
   { href: "/zapatos", key: "shoes" },
   { href: "/ropa", key: "apparel" },
   { href: "/contacto", key: "contact" },

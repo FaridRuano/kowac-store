@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { connectDB } from "@/lib/db";
 import Category from "@/models/Category";
 import Product from "@/models/Product";
+import ProductVariant from "@/models/ProductVariant";
 
 export async function generateMetadata({ params }) {
   const { categorySlug } = await params;
@@ -64,25 +65,58 @@ async function getCategory(categorySlug) {
 
 async function getProductsByCategory(categoryId) {
   const products = await Product.find({ category: categoryId })
-    .select("name slug type basePrice price images mediaGroups showInCatalog status isActive")
+    .select("name slug type basePrice price showInCatalog status isActive mediaGroups")
     .sort({ name: 1 })
     .lean();
+  const productIds = products.map((product) => product._id);
+  const variants = productIds.length
+    ? await ProductVariant.find({ product: { $in: productIds }, isActive: true })
+      .select("product optionValues updatedAt")
+      .sort({ updatedAt: -1 })
+      .lean()
+    : [];
+  const variantsByProductId = new Map();
+
+  variants.forEach((variant) => {
+    const productId = variant.product?.toString();
+
+    if (!productId) {
+      return;
+    }
+
+    variantsByProductId.set(productId, [...(variantsByProductId.get(productId) || []), variant]);
+  });
 
   return products.map((product) => {
-    const mediaGroupUrls = (product.mediaGroups || [])
-      .flatMap((group) => group.media || [])
-      .filter((media) => media.type === "image" && media.url)
-      .sort((firstMedia, secondMedia) => Number(secondMedia.isPrimary) - Number(firstMedia.isPrimary) || firstMedia.sortOrder - secondMedia.sortOrder)
-      .map((media) => media.url);
+    const productId = product._id.toString();
+    const productVariants = variantsByProductId.get(productId) || [];
+    const colorValues = productVariants
+      .map((variant) => {
+        if (variant.optionValues?.get) {
+          return variant.optionValues.get("color") || "";
+        }
 
-    const images = [
-      ...mediaGroupUrls,
-      ...(product.images || []),
-    ].filter(Boolean);
+        return variant.optionValues?.color || "";
+      })
+      .filter(Boolean);
+    const mediaGroup = (product.mediaGroups || []).find((group) =>
+      group.optionKey === "color" && colorValues.includes(group.optionValue)
+    ) || (product.mediaGroups || []).find((group) =>
+      group.optionKey === "color" && group.media?.some((media) => media.type === "image" && (media.secureUrl || media.url))
+    );
+    const mediaUrls = (mediaGroup?.media || [])
+      .filter((media) => media.type === "image" && (media.secureUrl || media.url))
+      .sort((firstMedia, secondMedia) =>
+        Number(secondMedia.isPrimary) - Number(firstMedia.isPrimary) ||
+        Number(secondMedia.isSecondary) - Number(firstMedia.isSecondary) ||
+        Number(secondMedia.isFeatured) - Number(firstMedia.isFeatured) ||
+        (firstMedia.sortOrder || 0) - (secondMedia.sortOrder || 0)
+      )
+      .map((media) => media.secureUrl || media.url);
 
     return {
-      id: product._id.toString(),
-      images,
+      id: productId,
+      images: mediaUrls,
       name: product.name,
       price: product.basePrice || product.price,
       slug: product.slug,

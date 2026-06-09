@@ -25,6 +25,9 @@ export default async function ProfilePage() {
           <p className="text-muted" style={{ margin: 0 }}>
             {user.name} · {user.email} · {user.role}
           </p>
+          <p className="text-muted" style={{ margin: 0 }}>
+            {user.customerId ? "Cuenta vinculada a cliente." : "Cuenta sin perfil de cliente vinculado."}
+          </p>
           <LogoutButton />
         </div>
       </div>

@@ -28,6 +28,7 @@ export async function getCurrentUser() {
     const role = normalizeUserRole(user.role);
 
     return {
+      customerId: user.customer?.toString() || null,
       id: user._id.toString(),
       name: user.name,
       email: user.email,
@@ -37,4 +38,10 @@ export async function getCurrentUser() {
   } catch (error) {
     return null;
   }
+}
+
+export async function getCurrentInternalUser() {
+  const user = await getCurrentUser();
+
+  return user?.isInternal ? user : null;
 }

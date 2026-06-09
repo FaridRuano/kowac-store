@@ -27,6 +27,12 @@ const UserSchema = new Schema(
       default: "usuario",
       index: true,
     },
+    customer: {
+      type: Schema.Types.ObjectId,
+      ref: "Customer",
+      default: null,
+      index: true,
+    },
     isActive: {
       type: Boolean,
       default: true,
@@ -37,5 +43,12 @@ const UserSchema = new Schema(
     timestamps: true,
   }
 );
+
+if (
+  mongoose.models.User &&
+  !mongoose.models.User.schema.path("customer")
+) {
+  mongoose.deleteModel("User");
+}
 
 export default mongoose.models.User || mongoose.model("User", UserSchema);

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isValidObjectId } from "mongoose";
 
 import { connectDB } from "@/lib/db";
+import { getCurrentInternalUser } from "@/lib/session";
 import Product from "@/models/Product";
 import ProductVariant from "@/models/ProductVariant";
 
@@ -70,6 +71,12 @@ function buildSku(productSlug, sizeValue, colorValue) {
 
 export async function POST(_, context) {
   try {
+    const user = await getCurrentInternalUser();
+
+    if (!user) {
+      return NextResponse.json({ message: "No autorizado." }, { status: 401 });
+    }
+
     await connectDB();
 
     const { id } = await context.params;

@@ -80,6 +80,14 @@ const ProductMediaSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    isSecondary: {
+      type: Boolean,
+      default: false,
+    },
+    isFeatured: {
+      type: Boolean,
+      default: false,
+    },
     status: {
       type: String,
       enum: ["pending", "ready", "errored"],
@@ -288,8 +296,14 @@ const ProductSchema = new Schema(
     },
     type: {
       type: String,
-      enum: ["zapatos", "ropa", "accesorios"],
+      enum: ["zapatos", "ropa"],
       required: true,
+      index: true,
+    },
+    apparelFit: {
+      type: String,
+      enum: ["", "normal", "oversize", "fit"],
+      default: "",
       index: true,
     },
     status: {
@@ -362,5 +376,14 @@ const ProductSchema = new Schema(
     timestamps: true,
   }
 );
+
+if (
+  mongoose.models.Product &&
+  (!mongoose.models.Product.schema.path("apparelFit") ||
+    !mongoose.models.Product.schema.path("mediaGroups.0.media.0.isSecondary") ||
+    !mongoose.models.Product.schema.path("mediaGroups.0.media.0.isFeatured"))
+) {
+  mongoose.deleteModel("Product");
+}
 
 export default mongoose.models.Product || mongoose.model("Product", ProductSchema);

@@ -70,7 +70,7 @@ export default function CategoryTableNavigator({ categories }) {
               <td>
                 <Link
                   href={`/admin/catalogo/categorias/${category.slug}`}
-                  className="admin-table-icon-link"
+                  className="admin-icon-button admin-icon-button--secondary admin-table-icon-link"
                   aria-label={`Abrir productos de ${category.name}`}
                 >
                   <Expand size={15} strokeWidth={1.9} aria-hidden="true" />

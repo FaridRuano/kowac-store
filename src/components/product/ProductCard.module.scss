@@ -41,11 +41,18 @@
   letter-spacing: 0.18em;
 }
 
-.badge {
+.badges {
   position: absolute;
   top: 1rem;
   left: 1rem;
   z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  max-width: calc(100% - 2rem);
+}
+
+.badge {
   padding: 0.4rem 0.8rem;
   border-radius: 999px;
   background: rgba(26, 24, 22, 0.9);

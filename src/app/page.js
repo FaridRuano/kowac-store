@@ -15,12 +15,6 @@ const campaignPanels = [
     tag: "Espacio imagen 02",
     size: "small",
   },
-  {
-    slug: "accesorios",
-    title: "Accesorios",
-    tag: "Espacio imagen 03",
-    size: "small",
-  },
 ];
 
 const featuredProducts = [
@@ -59,10 +53,10 @@ export default function HomePage() {
               <span className="eyebrow">Nueva colección</span>
               <h1 className="hero-title">Más imagen. Más producto.</h1>
               <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-                <Link href="/tienda" className="button-primary">
+                <Link href="/zapatos" className="button-primary">
                   Ver productos
                 </Link>
-                <Link href="/tienda?type=zapatos" className="button-secondary">
+                <Link href="/zapatos" className="button-secondary">
                   Ver zapatos
                 </Link>
               </div>
@@ -94,7 +88,7 @@ export default function HomePage() {
             {campaignPanels.map((panel) => (
               <Link
                 key={panel.slug}
-                href={`/tienda?type=${panel.slug}`}
+                href={`/${panel.slug}`}
                 className={`campaign-card campaign-card--${panel.size} card-surface`}
               >
                 <span className="visual-label">{panel.tag}</span>
@@ -121,8 +115,8 @@ export default function HomePage() {
             </div>
             <div className="lookbook-copy card-surface">
               <span className="eyebrow">Drop</span>
-              <strong>Zapatos, ropa y accesorios en primer plano.</strong>
-              <Link href="/tienda" className="button-primary">
+              <strong>Zapatos y ropa en primer plano.</strong>
+              <Link href="/zapatos" className="button-primary">
                 Comprar ahora
               </Link>
             </div>

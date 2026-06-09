@@ -7,6 +7,7 @@ import { useState } from "react";
 import AdminToast from "@/components/admin/AdminToast";
 
 const initialState = {
+  apparelFit: "",
   baseCost: "",
   basePrice: "",
   category: "",
@@ -31,10 +32,16 @@ export default function ProductForm({ categories = [], product = null }) {
 
   function handleChange(event) {
     const { checked, name, type, value } = event.target;
+    const nextTypeData = name === "type"
+      ? {
+          apparelFit: value === "ropa" ? "normal" : "",
+          category: "",
+        }
+      : {};
 
     setFormData((current) => ({
       ...current,
-      ...(name === "type" ? { category: "" } : {}),
+      ...nextTypeData,
       [name]: type === "checkbox" ? checked : value,
     }));
   }
@@ -184,6 +191,17 @@ export default function ProductForm({ categories = [], product = null }) {
           </select>
         </label>
 
+        {formData.type === "ropa" ? (
+          <label>
+            <span>Corte</span>
+            <select name="apparelFit" value={formData.apparelFit} onChange={handleChange}>
+              <option value="normal">Normal</option>
+              <option value="oversize">Oversize</option>
+              <option value="fit">Fit</option>
+            </select>
+          </label>
+        ) : null}
+
         <label>
           <span>Estado</span>
           <select name="status" value={formData.status} onChange={handleChange}>
@@ -266,6 +284,7 @@ function buildProductPayload(formData) {
   return {
     baseCost: parseMoneyValue(formData.baseCost),
     basePrice,
+    apparelFit: formData.type === "ropa" ? formData.apparelFit || "normal" : "",
     category: formData.category,
     description: formData.description,
     gender: formData.gender,
@@ -292,6 +311,7 @@ function getInitialFormState(product) {
   }
 
   return {
+    apparelFit: product.apparelFit || (product.type === "ropa" ? "normal" : ""),
     baseCost: formatMoneyForInput(product.baseCost),
     basePrice: formatMoneyForInput(product.basePrice),
     category: product.category || "",

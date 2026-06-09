@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isValidObjectId } from "mongoose";
 
 import { connectDB } from "@/lib/db";
+import { getCurrentInternalUser } from "@/lib/session";
 import { createSlug } from "@/lib/slug";
 import { productUpdateSchema } from "@/lib/validators";
 import Product from "@/models/Product";
@@ -75,6 +76,12 @@ export async function GET(_, context) {
 
 export async function PATCH(request, context) {
   try {
+    const user = await getCurrentInternalUser();
+
+    if (!user) {
+      return NextResponse.json({ message: "No autorizado." }, { status: 401 });
+    }
+
     await connectDB();
 
     const { id } = await context.params;
@@ -119,6 +126,12 @@ export async function PATCH(request, context) {
 
 export async function DELETE(_, context) {
   try {
+    const user = await getCurrentInternalUser();
+
+    if (!user) {
+      return NextResponse.json({ message: "No autorizado." }, { status: 401 });
+    }
+
     await connectDB();
 
     const { id } = await context.params;

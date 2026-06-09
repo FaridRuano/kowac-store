@@ -176,6 +176,22 @@ export default function VariantInventoryForm({ variant }) {
             <span>{formData.isFeatured ? "Producto destacado" : "No destacado"}</span>
           </span>
         </label>
+
+        <label className={`admin-product-form__visibility ${formData.isNewArrival ? "admin-product-form__visibility--active" : ""}`}>
+          <span>Nuevo</span>
+          <input name="isNewArrival" type="checkbox" checked={formData.isNewArrival} onChange={handleChange} />
+          <span className="admin-product-form__visibility-control">
+            <span>{formData.isNewArrival ? "Marcado como nuevo" : "No es nuevo"}</span>
+          </span>
+        </label>
+
+        <label className={`admin-product-form__visibility ${formData.isTrending ? "admin-product-form__visibility--active" : ""}`}>
+          <span>Tendencia</span>
+          <input name="isTrending" type="checkbox" checked={formData.isTrending} onChange={handleChange} />
+          <span className="admin-product-form__visibility-control">
+            <span>{formData.isTrending ? "En tendencia" : "No tendencia"}</span>
+          </span>
+        </label>
       </div>
 
       <div className="admin-product-form__section">
@@ -234,6 +250,8 @@ function getInitialFormState(variant) {
       value: formatMoneyInput(variant.discount?.value),
     },
     isFeatured: Boolean(variant.isFeatured),
+    isNewArrival: Boolean(variant.isNewArrival),
+    isTrending: Boolean(variant.isTrending),
     price: formatMoneyInput(variant.price),
     reservedStock: String(variant.reservedStock || 0),
     showInCatalog: Boolean(variant.showInCatalog),
@@ -252,6 +270,8 @@ function buildPayload(formData) {
       value: Number(formData.discount.value || 0),
     },
     isFeatured: formData.isFeatured,
+    isNewArrival: formData.isNewArrival,
+    isTrending: formData.isTrending,
     price: Number(formData.price || 0),
     reservedStock: Number.parseInt(formData.reservedStock, 10) || 0,
     showInCatalog: formData.showInCatalog,

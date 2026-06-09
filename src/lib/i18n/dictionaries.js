@@ -44,7 +44,7 @@ export const dictionaries = {
     },
     search: {
       dialogLabel: "Buscar productos",
-      placeholder: "Buscar zapatos, ropa o accesorios",
+      placeholder: "Buscar zapatos o ropa",
       resultsFor: 'Resultados para "{query}"',
       startTyping: "Empieza a escribir para buscar productos",
       productCount: "{count} producto(s)",
@@ -120,7 +120,7 @@ export const dictionaries = {
     },
     search: {
       dialogLabel: "Search products",
-      placeholder: "Search shoes, apparel, or accessories",
+      placeholder: "Search shoes or apparel",
       resultsFor: 'Results for "{query}"',
       startTyping: "Start typing to search products",
       productCount: "{count} product(s)",

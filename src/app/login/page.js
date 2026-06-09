@@ -35,7 +35,7 @@ export default async function LoginPage({ searchParams }) {
     <section className={`${styles.loginPage} auth-page`}>
       <div className="container">
         <div className={styles.shell}>
-          <Link href="/tienda" className={styles.brand} aria-label="Ir a la tienda Kowac">
+          <Link href="/" className={styles.brand} aria-label="Ir al inicio de Kowac">
             KOWAC
           </Link>
 

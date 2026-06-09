@@ -19,6 +19,8 @@ const productMediaSchema = z.object({
   bytes: z.coerce.number().min(0).optional().nullable(),
   sortOrder: z.coerce.number().default(0),
   isPrimary: z.boolean().default(false),
+  isSecondary: z.boolean().default(false),
+  isFeatured: z.boolean().default(false),
   status: z.enum(["pending", "ready", "errored"]).default("ready"),
 });
 
@@ -72,7 +74,8 @@ export const productSchema = z.object({
   brand: z.string().trim().default("Kowac"),
   category: objectIdSchema.optional().or(z.literal("")),
   gender: z.enum(["hombre", "mujer", "unisex", "niños"]),
-  type: z.enum(["zapatos", "ropa", "accesorios"]),
+  type: z.enum(["zapatos", "ropa"]),
+  apparelFit: z.enum(["", "normal", "oversize", "fit"]).default(""),
   status: z.enum(["draft", "active", "inactive"]).default("draft"),
   baseCost: z.coerce.number().min(0).default(0),
   basePrice: z.coerce.number().min(0).default(0),
@@ -101,11 +104,86 @@ export const categorySchema = z.object({
 });
 
 const addressSchema = z.object({
+  country: z.string().trim().default("Ecuador"),
   province: z.string().trim().min(1),
   city: z.string().trim().min(1),
   addressLine: z.string().trim().min(1),
   reference: z.string().trim().optional().or(z.literal("")),
   isDefault: z.boolean().default(false),
+});
+
+export const customerSchema = z.object({
+  billingMode: z.enum(["consumer_final", "tax_data"]).default("consumer_final"),
+  customerType: z.enum(["national", "foreign"]).default("national"),
+  documentType: z.enum(["", "cedula", "ruc", "passport", "foreign_id"]).default(""),
+  documentNumber: z.string().trim().default(""),
+  taxName: z.string().trim().default(""),
+  firstName: z.string().trim().min(1),
+  lastName: z.string().trim().min(1),
+  email: z.email(),
+  phone: z.string().trim().min(1),
+  addresses: z.array(addressSchema).default([]),
+  billingAddress: addressSchema.nullable().default(null),
+}).superRefine((data, context) => {
+  if (data.billingMode === "consumer_final") {
+    return;
+  }
+
+  if (!data.taxName || data.taxName.length < 2) {
+    context.addIssue({
+      code: "custom",
+      message: "El nombre para factura es obligatorio.",
+      path: ["taxName"],
+    });
+  }
+
+  if (!data.documentNumber || data.documentNumber.length < 3) {
+    context.addIssue({
+      code: "custom",
+      message: "El número de documento es obligatorio.",
+      path: ["documentNumber"],
+    });
+  }
+
+  if (!data.billingAddress) {
+    context.addIssue({
+      code: "custom",
+      message: "La dirección fiscal es obligatoria.",
+      path: ["billingAddress"],
+    });
+  }
+
+  if (data.customerType === "national" && !["cedula", "ruc"].includes(data.documentType)) {
+    context.addIssue({
+      code: "custom",
+      message: "Selecciona cédula o RUC para clientes nacionales.",
+      path: ["documentType"],
+    });
+  }
+
+  if (data.customerType === "foreign" && !["passport", "foreign_id"].includes(data.documentType)) {
+    context.addIssue({
+      code: "custom",
+      message: "Selecciona identificación del exterior para clientes extranjeros.",
+      path: ["documentType"],
+    });
+  }
+
+  if (data.documentType === "cedula" && !/^\d{10}$/.test(data.documentNumber)) {
+    context.addIssue({
+      code: "custom",
+      message: "La cédula debe tener 10 dígitos.",
+      path: ["documentNumber"],
+    });
+  }
+
+  if (data.documentType === "ruc" && !/^\d{13}$/.test(data.documentNumber)) {
+    context.addIssue({
+      code: "custom",
+      message: "El RUC debe tener 13 dígitos.",
+      path: ["documentNumber"],
+    });
+  }
 });
 
 export const orderSchema = z.object({

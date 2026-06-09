@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isValidObjectId } from "mongoose";
 
 import { connectDB } from "@/lib/db";
+import { getCurrentInternalUser } from "@/lib/session";
 import { createSlug } from "@/lib/slug";
 import { productSchema } from "@/lib/validators";
 import Category from "@/models/Category";
@@ -114,7 +115,12 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    // TODO: proteger este endpoint con autenticación/roles del panel admin.
+    const user = await getCurrentInternalUser();
+
+    if (!user) {
+      return NextResponse.json({ message: "No autorizado." }, { status: 401 });
+    }
+
     await connectDB();
 
     const body = await request.json();

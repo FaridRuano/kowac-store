@@ -17,7 +17,11 @@ export default function ProductCard({ product }) {
   return (
     <Link href={`/producto/${product.slug}`} className={styles.card}>
       <div className={styles.media}>
-        {product?.isFeatured ? <span className={styles.badge}>Destacado</span> : null}
+        <div className={styles.badges}>
+          {product?.isFeatured ? <span className={styles.badge}>Destacado</span> : null}
+          {product?.isNewArrival ? <span className={styles.badge}>Nuevo</span> : null}
+          {product?.isTrending ? <span className={styles.badge}>Tendencia</span> : null}
+        </div>
         {image ? (
           <img src={image} alt={product.name} />
         ) : (

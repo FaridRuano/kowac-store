@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useSyncExternalStore } from "react";
 
 import {
   defaultLanguage,
@@ -10,23 +10,51 @@ import {
 } from "@/lib/i18n/dictionaries";
 
 const STORAGE_KEY = "kowac-language";
+const LANGUAGE_CHANGE_EVENT = "kowac-language-change";
 
 const LanguageContext = createContext(null);
 
+function isSupportedLanguage(value) {
+  return supportedLanguages.some((item) => item.code === value);
+}
+
+function getStoredLanguage() {
+  if (typeof window === "undefined") {
+    return defaultLanguage;
+  }
+
+  const savedLanguage = window.localStorage.getItem(STORAGE_KEY);
+
+  return isSupportedLanguage(savedLanguage) ? savedLanguage : defaultLanguage;
+}
+
+function subscribeToLanguageChange(callback) {
+  window.addEventListener("storage", callback);
+  window.addEventListener(LANGUAGE_CHANGE_EVENT, callback);
+
+  return () => {
+    window.removeEventListener("storage", callback);
+    window.removeEventListener(LANGUAGE_CHANGE_EVENT, callback);
+  };
+}
+
 export function LanguageProvider({ children }) {
-  const [language, setLanguage] = useState(defaultLanguage);
+  const language = useSyncExternalStore(subscribeToLanguageChange, getStoredLanguage, () => defaultLanguage);
+  const setLanguage = useCallback((nextLanguage) => {
+    const normalizedLanguage = typeof nextLanguage === "function"
+      ? nextLanguage(getStoredLanguage())
+      : nextLanguage;
 
-  useEffect(() => {
-    const savedLanguage = window.localStorage.getItem(STORAGE_KEY);
-
-    if (savedLanguage && supportedLanguages.some((item) => item.code === savedLanguage)) {
-      setLanguage(savedLanguage);
+    if (!isSupportedLanguage(normalizedLanguage)) {
+      return;
     }
+
+    window.localStorage.setItem(STORAGE_KEY, normalizedLanguage);
+    window.dispatchEvent(new Event(LANGUAGE_CHANGE_EVENT));
   }, []);
 
   useEffect(() => {
     document.documentElement.lang = language;
-    window.localStorage.setItem(STORAGE_KEY, language);
   }, [language]);
 
   const value = useMemo(() => {
@@ -39,7 +67,7 @@ export function LanguageProvider({ children }) {
       supportedLanguages,
       formatMessage: (template, replacements) => formatMessage(template, replacements),
     };
-  }, [language]);
+  }, [language, setLanguage]);
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 }

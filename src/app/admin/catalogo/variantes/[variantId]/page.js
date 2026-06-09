@@ -64,6 +64,8 @@ async function getVariant(variantId) {
     },
     id: variant._id.toString(),
     isFeatured: Boolean(variant.isFeatured),
+    isNewArrival: Boolean(variant.isNewArrival),
+    isTrending: Boolean(variant.isTrending),
     name: variant.name,
     price: variant.price || 0,
     productHref: variant.product?._id ? `/admin/catalogo/productos/${variant.product._id.toString()}` : "",
@@ -97,7 +99,7 @@ export default async function AdminCatalogVariantDetailPage({ params }) {
           <span className="eyebrow">Inventario</span>
           <h1>{variant.name}</h1>
           <p className="text-muted">
-            Administra esta variante real sin modificar el producto base.
+            Administra stock, precio y visibilidad. Las imágenes se comparten por color desde la ficha del producto.
           </p>
         </div>
         <span className={`admin-page__status ${variant.status === "active" ? "admin-page__status--success" : "admin-page__status--muted"}`}>
