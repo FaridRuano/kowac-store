@@ -276,6 +276,10 @@ const ProductVariantSchema = new Schema(
 );
 
 ProductVariantSchema.index({ product: 1, optionSignature: 1 }, { unique: true });
+ProductVariantSchema.index({ category: 1, status: 1, showInCatalog: 1, isActive: 1, product: 1 });
+ProductVariantSchema.index({ product: 1, status: 1, showInCatalog: 1, isActive: 1, updatedAt: -1 });
+ProductVariantSchema.index({ product: 1, status: 1, showInCatalog: 1, isActive: 1, price: 1 });
+ProductVariantSchema.index({ product: 1, status: 1, showInCatalog: 1, isActive: 1, isTrending: -1, isFeatured: -1, updatedAt: -1 });
 
 if (
   mongoose.models.ProductVariant &&

@@ -377,6 +377,8 @@ const ProductSchema = new Schema(
   }
 );
 
+ProductSchema.index({ type: 1, category: 1, status: 1, showInCatalog: 1, isActive: 1, name: 1 });
+
 if (
   mongoose.models.Product &&
   (!mongoose.models.Product.schema.path("apparelFit") ||

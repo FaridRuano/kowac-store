@@ -4,6 +4,7 @@ import { connectDB } from "@/lib/db";
 import Category from "@/models/Category";
 import Product from "@/models/Product";
 import ProductVariant from "@/models/ProductVariant";
+import { unstable_cache } from "next/cache";
 
 export const metadata = {
   title: "Zapatos | Kowac",
@@ -111,37 +112,39 @@ async function getShoeCatalog(params) {
   const selectedCategory = params.subtype
     ? await Category.findOne({ isActive: true, slug: params.subtype, type: "zapatos" }).select("_id name slug").lean()
     : null;
-  const productFilters = {
-    isActive: true,
-    showInCatalog: true,
-    status: "active",
-    type: "zapatos",
-    ...(selectedCategory ? { category: selectedCategory._id } : {}),
-  };
-  const products = await Product.find(productFilters)
-    .select("name slug brand category mediaGroups")
-    .sort({ name: 1 })
-    .lean();
-  const productIds = products.map((product) => product._id);
-  const productById = new Map(products.map((product) => [product._id.toString(), product]));
   const baseVariantFilters = {
+    ...(selectedCategory ? { category: selectedCategory._id } : {}),
     isActive: true,
-    product: { $in: productIds },
     showInCatalog: true,
     status: "active",
   };
-  const allVisibleVariants = productIds.length
-    ? await ProductVariant.find(baseVariantFilters)
-      .select("product size colorName colorHex")
+  const allVisibleVariants = await ProductVariant.find(baseVariantFilters)
+    .select("product size colorName colorHex")
+    .lean();
+  const productIds = [...new Set(allVisibleVariants.map((variant) => variant.product?.toString()).filter(Boolean))];
+  const products = productIds.length
+    ? await Product.find({
+        _id: { $in: productIds },
+        isActive: true,
+        showInCatalog: true,
+        status: "active",
+        type: "zapatos",
+        ...(selectedCategory ? { category: selectedCategory._id } : {}),
+      })
+      .select("name slug brand category mediaGroups")
+      .sort({ name: 1 })
       .lean()
     : [];
+  const productById = new Map(products.map((product) => [product._id.toString(), product]));
+  const activeProductIds = new Set(productById.keys());
+  const activeVisibleVariants = allVisibleVariants.filter((variant) => activeProductIds.has(variant.product?.toString()));
   const sizeOptions = [...new Map(
-    allVisibleVariants
+    activeVisibleVariants
       .filter((variant) => variant.size)
       .map((variant) => [variant.size, { label: variant.size, value: variant.size }])
   ).values()].sort(sortSizes);
   const colorOptions = [...new Map(
-    allVisibleVariants
+    activeVisibleVariants
       .filter((variant) => variant.colorName)
       .map((variant) => [
         slugifyFilterValue(variant.colorName),
@@ -157,6 +160,7 @@ async function getShoeCatalog(params) {
   const maxPrice = params.max === "" ? null : Number(params.max);
   const variantFilters = {
     ...baseVariantFilters,
+    product: { $in: products.map((product) => product._id) },
     ...(params.size ? { size: params.size } : {}),
     ...(selectedColor ? { colorName: selectedColor.label } : {}),
     ...(Number.isFinite(minPrice) || Number.isFinite(maxPrice)
@@ -185,10 +189,12 @@ async function getShoeCatalog(params) {
     ];
   }
 
-  const variants = await ProductVariant.find(variantFilters)
+  const variants = products.length
+    ? await ProductVariant.find(variantFilters)
     .select("product name price compareAtPrice discount optionValues isFeatured isNewArrival isTrending updatedAt")
     .sort(getSortQuery(params.sort))
-    .lean();
+    .lean()
+    : [];
   const seenProducts = new Set();
   const catalogProducts = [];
 
@@ -222,9 +228,18 @@ async function getShoeCatalog(params) {
   };
 }
 
+const getCachedShoeCatalog = unstable_cache(
+  async (params) => getShoeCatalog(params),
+  ["shoe-catalog"],
+  {
+    revalidate: 300,
+    tags: ["shoe-catalog"],
+  }
+);
+
 export default async function ShoesPage({ searchParams }) {
   const params = normalizeSearchParams(await searchParams);
-  const catalog = await getShoeCatalog(params);
+  const catalog = await getCachedShoeCatalog(params);
   const title = catalog.categoryName ? `Zapatos / ${catalog.categoryName}` : "Colección de zapatos";
 
   return (
