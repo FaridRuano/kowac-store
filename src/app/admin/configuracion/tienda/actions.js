@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { connectDB } from "@/lib/db";
@@ -12,6 +12,12 @@ const allowedTypes = new Set(["zapatos", "ropa"]);
 
 function getSettingsPath(type) {
   return `/admin/configuracion/tienda?tipo=${type === "ropa" ? "ropa" : "calzado"}`;
+}
+
+function revalidateStoreCategory(type) {
+  revalidatePath("/admin/configuracion/tienda");
+  revalidatePath(type === "zapatos" ? "/zapatos" : "/ropa");
+  updateTag(type === "zapatos" ? "shoe-catalog" : "apparel-catalog");
 }
 
 async function requireInternalUser() {
@@ -82,8 +88,7 @@ export async function createStoreCategory(formData) {
     );
   }
 
-  revalidatePath("/admin/configuracion/tienda");
-  revalidatePath(type === "zapatos" ? "/zapatos" : "/ropa");
+  revalidateStoreCategory(type);
   redirect(getSettingsPath(type));
 }
 
@@ -104,6 +109,5 @@ export async function deleteStoreCategory(formData) {
     { runValidators: true }
   );
 
-  revalidatePath("/admin/configuracion/tienda");
-  revalidatePath(type === "zapatos" ? "/zapatos" : "/ropa");
+  revalidateStoreCategory(type);
 }

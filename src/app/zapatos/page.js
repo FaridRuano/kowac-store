@@ -1,32 +1,25 @@
+/* eslint-disable @next/next/no-img-element */
 import ProductCategoryFilters from "@/components/product/ProductCategoryFilters";
 import ProductGrid from "@/components/product/ProductGrid";
 import { connectDB } from "@/lib/db";
 import Category from "@/models/Category";
 import Product from "@/models/Product";
 import ProductVariant from "@/models/ProductVariant";
+import Link from "next/link";
 import { unstable_cache } from "next/cache";
 
 export const metadata = {
   title: "Zapatos | Kowac",
 };
 
-function escapeRegex(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
 function normalizeSearchParams(searchParams = {}) {
   const rawSort = String(Array.isArray(searchParams.sort) ? searchParams.sort[0] : searchParams.sort || "newest").trim();
-  const rawTag = String(Array.isArray(searchParams.tag) ? searchParams.tag[0] : searchParams.tag || "").trim();
 
   return {
     color: String(Array.isArray(searchParams.color) ? searchParams.color[0] : searchParams.color || "").trim(),
-    max: String(Array.isArray(searchParams.max) ? searchParams.max[0] : searchParams.max || "").trim(),
-    min: String(Array.isArray(searchParams.min) ? searchParams.min[0] : searchParams.min || "").trim(),
-    q: String(Array.isArray(searchParams.q) ? searchParams.q[0] : searchParams.q || "").trim(),
     size: String(Array.isArray(searchParams.size) ? searchParams.size[0] : searchParams.size || "").trim(),
-    sort: ["newest", "price-asc", "price-desc", "trending"].includes(rawSort) ? rawSort : "newest",
+    sort: ["newest", "price-asc", "price-desc"].includes(rawSort) ? rawSort : "newest",
     subtype: String(Array.isArray(searchParams.subtype) ? searchParams.subtype[0] : searchParams.subtype || "").trim(),
-    tag: ["new", "trending"].includes(rawTag) ? rawTag : "",
   };
 }
 
@@ -99,11 +92,19 @@ function getSortQuery(sort) {
     return { price: -1, updatedAt: -1 };
   }
 
-  if (sort === "trending") {
-    return { isTrending: -1, isFeatured: -1, updatedAt: -1 };
-  }
-
   return { isNewArrival: -1, updatedAt: -1 };
+}
+
+function getSpotlightProducts(products) {
+  return products.filter((product) => product.isFeatured).slice(0, 5);
+}
+
+function getFallbackCategoryName(slug) {
+  return String(slug || "")
+    .split("-")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 }
 
 async function getShoeCatalog(params) {
@@ -112,6 +113,16 @@ async function getShoeCatalog(params) {
   const selectedCategory = params.subtype
     ? await Category.findOne({ isActive: true, slug: params.subtype, type: "zapatos" }).select("_id name slug").lean()
     : null;
+
+  if (params.subtype && !selectedCategory) {
+    return {
+      categoryName: getFallbackCategoryName(params.subtype),
+      colorOptions: [],
+      products: [],
+      sizeOptions: [],
+    };
+  }
+
   const baseVariantFilters = {
     ...(selectedCategory ? { category: selectedCategory._id } : {}),
     isActive: true,
@@ -156,38 +167,12 @@ async function getShoeCatalog(params) {
       ])
   ).values()].sort((firstColor, secondColor) => firstColor.label.localeCompare(secondColor.label, "es"));
   const selectedColor = colorOptions.find((option) => option.value === params.color);
-  const minPrice = params.min === "" ? null : Number(params.min);
-  const maxPrice = params.max === "" ? null : Number(params.max);
   const variantFilters = {
     ...baseVariantFilters,
     product: { $in: products.map((product) => product._id) },
     ...(params.size ? { size: params.size } : {}),
     ...(selectedColor ? { colorName: selectedColor.label } : {}),
-    ...(Number.isFinite(minPrice) || Number.isFinite(maxPrice)
-      ? {
-          price: {
-            ...(Number.isFinite(minPrice) ? { $gte: minPrice } : {}),
-            ...(Number.isFinite(maxPrice) ? { $lte: maxPrice } : {}),
-          },
-        }
-      : {}),
-    ...(params.tag === "new" ? { isNewArrival: true } : {}),
-    ...(params.tag === "trending" ? { isTrending: true } : {}),
   };
-
-  if (params.q) {
-    const searchRegex = new RegExp(escapeRegex(params.q), "i");
-    const matchingProductIds = products
-      .filter((product) => searchRegex.test(product.name) || searchRegex.test(product.slug))
-      .map((product) => product._id);
-
-    variantFilters.$or = [
-      { name: searchRegex },
-      { baseProductName: searchRegex },
-      { sku: searchRegex },
-      ...(matchingProductIds.length ? [{ product: { $in: matchingProductIds } }] : []),
-    ];
-  }
 
   const variants = products.length
     ? await ProductVariant.find(variantFilters)
@@ -207,6 +192,7 @@ async function getShoeCatalog(params) {
 
     seenProducts.add(product._id.toString());
     catalogProducts.push({
+      _id: product._id.toString(),
       brand: product.brand || "Kowac",
       compareAtPrice: variant.compareAtPrice || null,
       images: [getProductColorImage(product, variant)].filter(Boolean),
@@ -240,33 +226,54 @@ const getCachedShoeCatalog = unstable_cache(
 export default async function ShoesPage({ searchParams }) {
   const params = normalizeSearchParams(await searchParams);
   const catalog = await getCachedShoeCatalog(params);
-  const title = catalog.categoryName ? `Zapatos / ${catalog.categoryName}` : "Colección de zapatos";
+  const spotlightProducts = getSpotlightProducts(catalog.products);
+  const title = catalog.categoryName || "Zapatos";
 
   return (
-    <section className="simple-page">
-      <div className="container stack-lg">
+    <section className="catalog-page">
+      <div className="catalog-page__header">
         <div className="catalog-heading">
-          <span className="eyebrow">Zapatos</span>
+          <span className="catalog-heading__kicker">Zapatos</span>
           <h1>{title}</h1>
-          <p className="text-muted">
-            Explora las presentaciones disponibles por talla, color y búsqueda.
+          <span className="catalog-heading__count">{catalog.products.length} producto(s)</span>
+          <p>
+            Explora los modelos disponibles por talla y color, con los destacados de la categoría al inicio.
           </p>
         </div>
 
-        <div className="catalog-layout">
-          <ProductCategoryFilters
-            key={`${params.q}:${params.size}:${params.color}:${params.min}:${params.max}:${params.sort}:${params.tag}:${params.subtype}`}
-            colorOptions={catalog.colorOptions}
-            currentColor={params.color}
-            currentMaxPrice={params.max}
-            currentMinPrice={params.min}
-            currentQuery={params.q}
-            currentSize={params.size}
-            currentSort={params.sort}
-            currentTag={params.tag}
-            resultCount={catalog.products.length}
-            sizeOptions={catalog.sizeOptions}
-          />
+        {spotlightProducts.length ? (
+          <div className="catalog-spotlight" aria-label="Productos destacados">
+            {spotlightProducts.map((product) => (
+              <Link key={product.slug} href={`/producto/${product.slug}`} className="catalog-spotlight-card">
+                <div className="catalog-spotlight-card__media">
+                  {product.images?.[0] ? (
+                    <img src={product.images[0]} alt={product.name} />
+                  ) : (
+                    <div className="catalog-spotlight-card__placeholder">KOWAC</div>
+                  )}
+                  <span>Top</span>
+                </div>
+                <div className="catalog-spotlight-card__body">
+                  <strong>{product.name}</strong>
+                </div>
+              </Link>
+            ))}
+          </div>
+        ) : null}
+      </div>
+
+      <div className="catalog-layout">
+        <ProductCategoryFilters
+          key={`${params.size}:${params.color}:${params.sort}:${params.subtype}`}
+          colorOptions={catalog.colorOptions}
+          currentColor={params.color}
+          currentSize={params.size}
+          currentSort={params.sort}
+          label="zapatos"
+          resultCount={catalog.products.length}
+          sizeOptions={catalog.sizeOptions}
+        />
+        <div className="catalog-products">
           <ProductGrid products={catalog.products} />
         </div>
       </div>

@@ -1,18 +1,17 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.5rem;
+  gap: 2.4rem 1rem;
 }
 
 .empty {
   padding: 2rem;
   border: 1px dashed var(--color-border);
-  border-radius: var(--radius-lg);
   color: var(--color-muted);
   text-align: center;
 }
 
-@media (max-width: 960px) {
+@media (max-width: 900px) {
   .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -20,6 +19,11 @@
 
 @media (max-width: 640px) {
   .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem 0.45rem;
+  }
+
+  :global(html[data-catalog-mobile-grid="1"]) .grid {
     grid-template-columns: 1fr;
   }
 }

@@ -17,11 +17,10 @@ const categoryGroups = {
     description: "Categorías visibles para organizar la colección de zapatos.",
     defaultCategories: [
       { name: "Casuales", slug: "casuales", status: "Activa" },
-      { name: "Chunkys", slug: "chunkys", status: "Activa" },
-      { name: "Formales", slug: "formales", status: "Activa" },
+      { name: "Flats", slug: "flats", status: "Activa" },
+      { name: "Mocasines", slug: "mocasines", status: "Activa" },
       { name: "Botines", slug: "botines", status: "Activa" },
-      { name: "Botas de cuero", slug: "botas-cuero", status: "Activa" },
-      { name: "Botas microfibra", slug: "botas-microfibra", status: "Activa" },
+      { name: "Botas", slug: "botas", status: "Activa" },
     ],
   },
   ropa: {

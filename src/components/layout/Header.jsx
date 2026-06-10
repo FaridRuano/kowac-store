@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Heart, Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,7 +12,7 @@ import CartOverlay from "@/components/cart/CartOverlay";
 import SearchOverlay from "./SearchOverlay";
 import styles from "./Header.module.scss";
 
-const navigation = [
+const fallbackNavigation = [
   {
     key: "zapatos",
     href: "/zapatos",
@@ -20,11 +20,10 @@ const navigation = [
     promoKey: "shoesPromo",
     links: [
       { href: "/zapatos?subtype=casuales", labelKey: "casual" },
-      { href: "/zapatos?subtype=chunkys", labelKey: "chunky" },
-      { href: "/zapatos?subtype=formales", labelKey: "formal" },
+      { href: "/zapatos?subtype=flats", labelKey: "flats" },
+      { href: "/zapatos?subtype=mocasines", labelKey: "loafers" },
       { href: "/zapatos?subtype=botines", labelKey: "ankleBoots" },
-      { href: "/zapatos?subtype=botas-cuero", labelKey: "leatherBoots" },
-      { href: "/zapatos?subtype=botas-microfibra", labelKey: "microfiberBoots" },
+      { href: "/zapatos?subtype=botas", labelKey: "boots" },
     ],
   },
   {
@@ -42,15 +41,59 @@ const navigation = [
   },
 ];
 
+function buildCategoryLinks(categories, type, basePath) {
+  return categories
+    .filter((category) => category.type === type && category.slug && category.name)
+    .map((category) => ({
+      href: `${basePath}?subtype=${category.slug}`,
+      label: category.name,
+    }));
+}
+
 export default function Header() {
   const { dictionary } = useLanguage();
   const [activeMenuKey, setActiveMenuKey] = useState(null);
-  const [activeMobileMenuKey, setActiveMobileMenuKey] = useState(navigation[0].key);
+  const [activeMobileMenuKey, setActiveMobileMenuKey] = useState(fallbackNavigation[0].key);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [authUser, setAuthUser] = useState(null);
+  const [storeCategories, setStoreCategories] = useState([]);
+  const loadStoreCategories = useCallback(async () => {
+    try {
+      const response = await fetch("/api/categories", { cache: "no-store" });
+
+      if (!response.ok) {
+        return;
+      }
+
+      const data = await response.json();
+
+      if (Array.isArray(data)) {
+        setStoreCategories(data);
+      }
+    } catch (error) {
+      setStoreCategories([]);
+    }
+  }, []);
+
+  const navigation = useMemo(() => {
+    const shoeLinks = buildCategoryLinks(storeCategories, "zapatos", "/zapatos");
+    const apparelLinks = buildCategoryLinks(storeCategories, "ropa", "/ropa");
+
+    return fallbackNavigation.map((item) => {
+      if (item.key === "zapatos" && shoeLinks.length) {
+        return { ...item, links: shoeLinks };
+      }
+
+      if (item.key === "ropa" && apparelLinks.length) {
+        return { ...item, links: apparelLinks };
+      }
+
+      return item;
+    });
+  }, [storeCategories]);
 
   const activeMenu = navigation.find((item) => item.key === activeMenuKey) || null;
   const activeMobileMenu = navigation.find((item) => item.key === activeMobileMenuKey) || navigation[0];
@@ -121,6 +164,7 @@ export default function Header() {
     setCartOpen(false);
     setActiveMenuKey(null);
     setActiveMobileMenuKey(navigation[0].key);
+    loadStoreCategories();
     setMobileMenuOpen((currentValue) => !currentValue);
   }
 
@@ -137,6 +181,10 @@ export default function Header() {
 
   function handleCloseCart() {
     setCartOpen(false);
+  }
+
+  function getNavigationLabel(item) {
+    return item.label || dictionary.nav[item.labelKey] || "";
   }
 
   return (
@@ -178,16 +226,20 @@ export default function Header() {
                     setSearchOpen(false);
                   }
 
+                  loadStoreCategories();
                   setActiveMenuKey(item.key);
                 }}
-                onFocus={() => setActiveMenuKey(item.key)}
+                onFocus={() => {
+                  loadStoreCategories();
+                  setActiveMenuKey(item.key);
+                }}
               >
                 <Link
                   href={item.href}
                   className={`${styles.navLink} ${activeMenuKey === item.key ? styles.navLinkActive : ""}`}
                   onClick={handleCloseNavigation}
                 >
-                  {dictionary.nav[item.labelKey]}
+                  {getNavigationLabel(item)}
                 </Link>
               </div>
             ))}
@@ -204,7 +256,7 @@ export default function Header() {
                       className={styles.submenuLink}
                       onClick={handleCloseNavigation}
                     >
-                      {dictionary.nav[link.labelKey]}
+                      {getNavigationLabel(link)}
                     </Link>
                   ))}
                 </div>
@@ -219,8 +271,8 @@ export default function Header() {
                 <div className={styles.submenuVisual}>
                   <span className={styles.submenuVisualLabel}>Espacio imagen 02</span>
                   <strong>
-                    {dictionary.nav.campaignLabel} {dictionary.nav[activeMenu.labelKey].toLowerCase()}
-                  </strong>
+                  {dictionary.nav.campaignLabel} {dictionary.nav[activeMenu.labelKey].toLowerCase()}
+                </strong>
                 </div>
               </div>
             </div>
@@ -314,7 +366,7 @@ export default function Header() {
                   className={`${styles.mobileMenuTab} ${activeMobileMenu.key === item.key ? styles.mobileMenuTabActive : ""}`}
                   onClick={() => setActiveMobileMenuKey(item.key)}
                 >
-                  {dictionary.nav[item.labelKey]}
+                  {getNavigationLabel(item)}
                 </button>
               ))}
             </div>
@@ -340,10 +392,10 @@ export default function Header() {
                     <Link
                       key={link.href}
                       href={link.href}
-                      className={styles.mobileNavLink}
-                      onClick={handleCloseNavigation}
-                    >
-                      {dictionary.nav[link.labelKey]}
+                    className={styles.mobileNavLink}
+                    onClick={handleCloseNavigation}
+                  >
+                      {getNavigationLabel(link)}
                     </Link>
                   ))}
                 </div>

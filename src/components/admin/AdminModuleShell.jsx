@@ -66,12 +66,14 @@ const moduleConfigs = {
       { href: "/admin/ventas", label: "Ventas directas" },
       { href: "/admin/ventas-online", label: "Ventas online" },
       { href: "/admin/pedidos", label: "Pedidos" },
+      { href: "/admin/ventas/correo", label: "Correo rápido" },
     ],
     titles: {
       "/admin/resumen": "Resumen",
       "/admin/clientes": "Clientes",
       "/admin/clientes/nuevo": "Nuevo cliente",
       "/admin/ventas": "Ventas directas",
+      "/admin/ventas/correo": "Correo rápido",
       "/admin/ventas-online": "Ventas online",
       "/admin/pedidos": "Pedidos a fábrica",
       "/admin/pedidos/nuevo": "Nuevo pedido a fábrica",
@@ -91,6 +93,10 @@ const moduleConfigs = {
 
       if (pathname === "/admin/ventas/nueva") {
         return "Nueva venta directa";
+      }
+
+      if (pathname === "/admin/ventas/correo") {
+        return "Correo rápido";
       }
 
       if (pathname.startsWith("/admin/ventas/")) {

@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { connectDB } from "@/lib/db";
+import { renderKowacEmail, sendEmail } from "@/lib/email";
+import { getEmailSender } from "@/lib/email-senders";
 import { getCurrentUser } from "@/lib/session";
 import Customer from "@/models/Customer";
 import ProductVariant from "@/models/ProductVariant";
@@ -18,6 +20,7 @@ const saleInitialState = {
 
 const DEFAULT_TAX_RATE = 15;
 const INVOICE_STATUSES = ["not_required", "pending", "issued", "cancelled"];
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 async function requireInternalUser() {
   const user = await getCurrentUser();
@@ -43,6 +46,22 @@ function normalizeDocumentNumber(value) {
 
 function roundMoney(value) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function formatPlainTextAsHtml(value) {
+  return escapeHtml(value)
+    .split(/\n{2,}/)
+    .map((paragraph) => `<p>${paragraph.replace(/\n/g, "<br />")}</p>`)
+    .join("");
 }
 
 function parseItems(value) {
@@ -165,6 +184,77 @@ export async function quickCreateSaleCustomer(prevState = saleInitialState, form
     message: "Cliente creado y seleccionado para la venta.",
     status: "success",
   };
+}
+
+export async function sendSalesEmail(prevState = saleInitialState, formData) {
+  void prevState;
+
+  await requireInternalUser();
+
+  const from = getString(formData, "from").toLowerCase();
+  const to = getString(formData, "to").toLowerCase();
+  const subject = getString(formData, "subject");
+  const message = getString(formData, "message");
+  const sender = getEmailSender(from);
+  const errors = {};
+
+  if (!sender) {
+    errors.from = ["Selecciona una dirección de Kowac válida."];
+  }
+
+  if (!emailRegex.test(to)) {
+    errors.to = ["Ingresa un correo válido."];
+  }
+
+  if (subject.length < 3) {
+    errors.subject = ["El asunto debe tener al menos 3 caracteres."];
+  }
+
+  if (message.length < 8) {
+    errors.message = ["El mensaje debe tener al menos 8 caracteres."];
+  }
+
+  if (Object.keys(errors).length) {
+    return {
+      errors,
+      message: "Revisa los campos antes de enviar.",
+      status: "error",
+    };
+  }
+
+  try {
+    const html = renderKowacEmail({
+      title: subject,
+      previewText: message.slice(0, 140),
+      children: `
+        <h1>${escapeHtml(subject)}</h1>
+        ${formatPlainTextAsHtml(message)}
+      `,
+    });
+
+    await sendEmail({
+      from: `${sender.name} <${sender.email}>`,
+      html,
+      replyTo: sender.email,
+      subject,
+      text: message,
+      to,
+    });
+
+    return {
+      errors: {},
+      message: `Correo enviado a ${to}.`,
+      status: "success",
+    };
+  } catch (error) {
+    console.error("sendSalesEmail error", error);
+
+    return {
+      errors: {},
+      message: "No se pudo enviar el correo. Revisa las variables SMTP o la contraseña de aplicación.",
+      status: "error",
+    };
+  }
 }
 
 export async function createSale(prevState = saleInitialState, formData) {

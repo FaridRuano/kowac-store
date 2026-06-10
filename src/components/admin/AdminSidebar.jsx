@@ -41,9 +41,10 @@ export default function AdminSidebar({ activePathname, sections, user, isOpen, o
                     </span>
                     <div className="admin-sidebar__links">
                       {section.items.map((item) => {
+                        const exactActiveHref = section.items.find((sectionItem) => sectionItem.href === activePathname)?.href || "";
                         const isNestedNewCustomerPath = item.href === "/admin/clientes" && activePathname.startsWith("/admin/clientes/nuevo");
                         const allowsNestedMatch = item.href !== "/admin/catalogo" && item.href !== "/admin/configuracion" && !isNestedNewCustomerPath;
-                        const isActive = activePathname === item.href || (allowsNestedMatch && activePathname.startsWith(`${item.href}/`));
+                        const isActive = activePathname === item.href || (!exactActiveHref && allowsNestedMatch && activePathname.startsWith(`${item.href}/`));
 
                         return (
                           <Link
